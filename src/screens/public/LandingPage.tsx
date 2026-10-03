@@ -6,7 +6,7 @@ import {
     ShieldCheck, Check, MessageCircle, Mail, ChevronDown, Menu, X, Sun, Moon, ArrowRight, Lock,
     Cloud, Headphones, Printer, ScanBarcode, Minus, Store, Zap, QrCode, type LucideIcon,
 } from "lucide-react";
-import { COMPANY, PLANS, PLAN_FEATURES, whatsappLink, mailtoLink } from "../../config/brand";
+import { COMPANY, CUSTOM_PLAN, PLANS, PLAN_FEATURES, PORTFOLIO, whatsappLink, mailtoLink } from "../../config/brand";
 import { formatBRL } from "../../lib/format";
 import { navigate } from "../../lib/router";
 import { useSession } from "../../contexts/SessionContext";
@@ -73,6 +73,7 @@ const FAQ = [
     { q: "Posso testar antes?", a: "Pode! Clique em “Ver demonstração” e use o sistema completo com dados de exemplo, sem cadastro." },
     { q: "Funciona com impressora de cupom e leitor de código de barras?", a: "Sim. O cupom é impresso pelo próprio navegador em impressoras térmicas de 80 mm ou comuns, e o leitor de código de barras USB funciona direto na tela de venda." },
     { q: "E se a assinatura vencer?", a: "O acesso fica pausado até a renovação, mas nenhum dado é apagado. Ao renovar, tudo volta exatamente como estava." },
+    { q: "Vocês fazem sistema sob medida?", a: `Sim! Desenvolvemos sistemas exclusivos para o seu negócio, com as funcionalidades que você precisar, a partir de ${formatBRL(CUSTOM_PLAN.price)}. Chame no WhatsApp para conversarmos sobre o seu projeto.` },
     { q: "Vocês ajudam a cadastrar os produtos?", a: "Sim. No início ajudamos a configurar a loja e a organizar o cadastro dos produtos pelo WhatsApp." },
 ];
 
@@ -91,7 +92,7 @@ export default function LandingPage() {
 
     const demo = () => { enterDemo(); navigate("/"); };
     const scrollTo = (id: string) => { setMenu(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
-    const links: [string, string][] = [["recursos", "Recursos"], ["como-funciona", "Como funciona"], ["planos", "Planos"], ["duvidas", "Dúvidas"], ["contato", "Contato"]];
+    const links: [string, string][] = [["recursos", "Recursos"], ["como-funciona", "Como funciona"], ["projetos", "Projetos"], ["planos", "Planos"], ["duvidas", "Dúvidas"], ["contato", "Contato"]];
 
     return (
         <div className="min-h-screen bg-bg font-sans text-fg-muted">
@@ -224,11 +225,24 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Projetos no ar */}
+            {PORTFOLIO.length > 0 && (
+                <section id="projetos" className="scroll-mt-16 py-20 sm:py-24">
+                    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                        <SectionTitle eyebrow="Projetos" title="Sistemas que já estão rodando" text="Alguns dos sistemas que desenvolvemos e que estão em uso hoje." />
+                        <div className="mt-12 grid gap-6 md:grid-cols-2">
+                            {PORTFOLIO.map(p => <PortfolioCard key={p.name} item={p} />)}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* Planos */}
             <section id="planos" className="scroll-mt-16 border-y border-line bg-surface py-20 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6">
                     <SectionTitle center eyebrow="Planos" title="Escolha o plano ideal para sua loja" text="Todos os planos incluem todos os recursos, atualizações e suporte pelo WhatsApp." />
                     <PlanCards />
+                    <CustomPlanCard />
                     <p className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-fg-subtle">
                         <span className="inline-flex items-center gap-2"><Zap size={15} className="text-fg-faint" /> Liberação no mesmo dia</span>
                         <span className="inline-flex items-center gap-2"><QrCode size={15} className="text-fg-faint" /> Pagamento por PIX</span>
@@ -487,7 +501,8 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
                             {featured && <span className="rounded-full border border-primary/25 bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-primary-text">{p.highlight}</span>}
                         </div>
                         <p className="mt-1 text-sm text-fg-subtle">{p.description}</p>
-                        <p className="mt-6 flex items-baseline gap-1.5">
+                        <p className="mt-6 flex flex-wrap items-baseline gap-x-1.5">
+                            <span className="w-full text-xs font-medium text-fg-subtle">a partir de</span>
                             <span className="text-[36px] font-bold tracking-tight text-fg tabular">{formatBRL(p.price)}</span>
                             <span className="text-sm text-fg-subtle">{p.period}</span>
                         </p>
@@ -507,5 +522,61 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
                 );
             })}
         </div>
+    );
+}
+
+function CustomPlanCard() {
+    return (
+        <div className="relative mt-5 overflow-hidden rounded-2xl bg-nav p-6 text-white shadow-[var(--ui-shadow-lg)] sm:p-8">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#4b6bdc]/30 blur-[90px]" />
+            <div className="relative grid gap-8 lg:grid-cols-[1.1fr_1.4fr] lg:items-center">
+                <div>
+                    <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white/85">Exclusivo</span>
+                    <h3 className="mt-3 text-2xl font-bold tracking-tight">Sistema {CUSTOM_PLAN.name.toLowerCase()}</h3>
+                    <p className="mt-2 text-sm text-white/65">{CUSTOM_PLAN.description}</p>
+                    <p className="mt-5 flex flex-wrap items-baseline gap-x-1.5">
+                        <span className="w-full text-xs font-medium text-white/60">a partir de</span>
+                        <span className="text-[34px] font-bold tracking-tight tabular">{formatBRL(CUSTOM_PLAN.price)}</span>
+                    </p>
+                    <a
+                        href={whatsappLink("Olá! Tenho interesse em um sistema sob medida para o meu negócio.")}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-[#0f172a] hover:bg-white/90"
+                    >
+                        <MessageCircle size={16} /> Solicitar orçamento
+                    </a>
+                </div>
+                <ul className="grid gap-3 text-sm sm:grid-cols-2">
+                    {CUSTOM_PLAN.features.map(f => (
+                        <li key={f} className="flex gap-2.5 text-white/85"><Check size={16} className="mt-0.5 shrink-0 text-[#8fd1a8]" /><span>{f}</span></li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+}
+
+function PortfolioCard({ item }: { item: (typeof PORTFOLIO)[number] }) {
+    const body = (
+        <>
+            <div className="relative aspect-[16/10] overflow-hidden border-b border-line bg-subtle">
+                <img src={item.image} alt={`Prévia do sistema ${item.name}`} loading="lazy" className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]" />
+            </div>
+            <div className="p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{item.category}</p>
+                <h3 className="mt-1.5 flex items-center gap-2 text-lg font-semibold text-fg">
+                    {item.name}
+                    {item.url && <ArrowRight size={16} className="text-fg-faint transition-transform group-hover:translate-x-0.5" />}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-fg-subtle">{item.description}</p>
+            </div>
+        </>
+    );
+    const cls = "group block overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--ui-shadow)] transition-shadow hover:shadow-[var(--ui-shadow-lg)]";
+    return item.url ? (
+        <a href={item.url} target="_blank" rel="noreferrer" className={cls}>{body}</a>
+    ) : (
+        <div className={cls}>{body}</div>
     );
 }
