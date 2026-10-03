@@ -1,15 +1,15 @@
-// src/screens/public/LandingPage.tsx — site de vendas da KT Sistemas
+// src/screens/public/LandingPage.tsx — site da KT Sistemas (desenvolvimento de sites, sistemas e aplicativos)
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
-    PlayCircle, ShoppingCart, Package, BookOpenText, Wrench, Receipt, BarChart3, Smartphone, Palette,
-    ShieldCheck, Check, MessageCircle, Mail, ChevronDown, Menu, X, Sun, Moon, ArrowRight, Lock,
-    Cloud, Headphones, Printer, ScanBarcode, Minus, Store, Zap, QrCode, type LucideIcon,
+    Globe, LayoutTemplate, ShoppingBag, Smartphone, LayoutDashboard, CalendarClock, UtensilsCrossed, Bot,
+    CreditCard, BedDouble, Wrench, Check, MessageCircle, Mail, ChevronDown, Menu, X, Sun, Moon, ArrowRight,
+    Cloud, Headphones, Palette, Rocket, ClipboardList, Code2, LifeBuoy, Sparkles, ChevronLeft, ChevronRight,
+    Send, type LucideIcon,
 } from "lucide-react";
-import { COMPANY, CUSTOM_PLAN, PLANS, PLAN_FEATURES, PORTFOLIO, whatsappLink, mailtoLink } from "../../config/brand";
+import { COMPANY, CUSTOM_PLAN, PLANS, PLAN_FEATURES, PORTFOLIO, SEGMENTS, whatsappLink, mailtoLink, type PortfolioItem } from "../../config/brand";
 import { formatBRL } from "../../lib/format";
 import { navigate } from "../../lib/router";
-import { useSession } from "../../contexts/SessionContext";
 import { useTheme } from "../../contexts/ThemeContext";
 
 /** Marca da KT Sistemas (cor fixa, não muda com o white label das lojas). */
@@ -25,102 +25,234 @@ export function KtLogo({ light = false, className = "" }: { light?: boolean; cla
     );
 }
 
-const FEATURES = [
-    { icon: ShoppingCart, title: "Vendas rápidas", text: "Busca por nome ou leitor de código de barras, desconto, troco e pagamento em PIX, cartão, dinheiro ou dividido." },
-    { icon: Package, title: "Estoque sob controle", text: "Baixa automática a cada venda, alerta de reposição, custo, margem de lucro e exportação em PDF." },
-    { icon: BookOpenText, title: "Fiado organizado", text: "Saiba quem deve, há quantos dias, e cobre com um toque pelo WhatsApp com a mensagem pronta." },
-    { icon: Wrench, title: "Ordens de serviço", text: "Acompanhe cada reparo da assistência, avise o cliente quando estiver pronto e receba na entrega." },
-    { icon: Receipt, title: "Caixa do dia", text: "Abertura com fundo de troco, sangrias, conferência no fechamento e relatório em PDF." },
-    { icon: BarChart3, title: "Relatórios e lucro", text: "Faturamento por período, formas de pagamento, mais vendidos e lucro bruto estimado." },
-    { icon: Palette, title: "Com a cara da sua loja", text: "Sua logo, seu nome e sua cor no sistema e nos cupons impressos." },
-    { icon: Smartphone, title: "Computador e celular", text: "Use no balcão, no tablet ou no celular. Tema claro e escuro." },
+/* ------------------------------------------------------------------ Conteúdo */
+
+const SERVICES: { icon: LucideIcon; title: string; text: string }[] = [
+    { icon: Globe, title: "Sites institucionais", text: "Site profissional para sua empresa aparecer no Google e passar confiança." },
+    { icon: LayoutTemplate, title: "Landing pages", text: "Páginas de venda e captação focadas em transformar visitas em clientes." },
+    { icon: ShoppingBag, title: "Lojas virtuais", text: "E-commerce completo com catálogo, carrinho, frete e pagamento online." },
+    { icon: Smartphone, title: "Aplicativos", text: "Apps para Android e iPhone, ou web apps que funcionam como aplicativo." },
+    { icon: LayoutDashboard, title: "Sistemas de gestão", text: "Vendas, estoque, financeiro, clientes e relatórios do jeito do seu negócio." },
+    { icon: CalendarClock, title: "Agendamento online", text: "Agenda para salões, barbearias, clínicas e serviços, com lembretes." },
+    { icon: BedDouble, title: "Reservas e hospedagem", text: "Calendário de disponibilidade, cálculo de diárias e pré-reserva." },
+    { icon: UtensilsCrossed, title: "Cardápio digital e delivery", text: "Cardápio pelo celular com pedidos direto no WhatsApp." },
+    { icon: Bot, title: "Automações e WhatsApp", text: "Mensagens automáticas, integrações e fim do trabalho repetitivo." },
+    { icon: CreditCard, title: "Pagamentos online", text: "PIX, cartão e links de pagamento integrados ao seu sistema." },
+    { icon: Palette, title: "Painéis administrativos", text: "Você mesmo atualiza textos, fotos, preços e produtos, sem depender de ninguém." },
+    { icon: Wrench, title: "Manutenção e melhorias", text: "Correções, novas funções e evolução de sites e sistemas que você já tem." },
 ];
 
-const HIGHLIGHTS = [
-    {
-        tag: "Balcão", title: "Venda em segundos, sem errar o troco",
-        text: "Monte o carrinho pelo nome ou pelo leitor de código de barras. O sistema calcula desconto e troco, baixa o estoque e imprime o cupom.",
-        points: ["Pagamento dividido entre PIX, cartão e dinheiro", "Venda no fiado com nome e telefone do cliente", "Cupom de 80 mm com a logo da sua loja"],
-        preview: "sale" as const,
-    },
-    {
-        tag: "Assistência técnica", title: "Cada aparelho com sua ordem de serviço",
-        text: "Registre defeito, orçamento e prazo. Acompanhe o reparo por etapas e avise o cliente pelo WhatsApp quando estiver pronto.",
-        points: ["Etapas: aguardando, peça pedida, em reparo, pronto", "Mensagem pronta para avisar o cliente", "Recebimento na entrega já entra no caixa"],
-        preview: "orders" as const,
-    },
-    {
-        tag: "Financeiro", title: "Feche o caixa sabendo exatamente o que entrou",
-        text: "Abra o caixa com o fundo de troco, registre sangrias e reforços, e compare o esperado com o contado no fechamento.",
-        points: ["Resumo por forma de pagamento", "Diferença de caixa destacada", "Relatórios em PDF para guardar ou enviar"],
-        preview: "cash" as const,
-    },
-];
-
-const COMPARISON = [
-    "Estoque atualizado sozinho a cada venda",
-    "Saber quem está devendo e desde quando",
-    "Acompanhar os reparos da assistência",
-    "Fechamento de caixa conferido",
-    "Lucro e mais vendidos do mês",
-    "Acesso pelo celular de qualquer lugar",
+const STEPS: { icon: LucideIcon; title: string; text: string }[] = [
+    { icon: MessageCircle, title: "Conversa", text: "Você conta a ideia pelo WhatsApp e entendemos o que o seu negócio precisa." },
+    { icon: ClipboardList, title: "Orçamento", text: "Enviamos a proposta com o que será feito, prazo e investimento." },
+    { icon: Code2, title: "Desenvolvimento", text: "Você acompanha prévias durante o projeto e pede ajustes." },
+    { icon: Rocket, title: "Entrega e suporte", text: "Colocamos no ar, treinamos você e seguimos dando suporte." },
 ];
 
 const FAQ = [
-    { q: "Preciso instalar alguma coisa?", a: "Não. O sistema funciona no navegador do computador, tablet ou celular. Basta acessar e entrar com seu e-mail." },
-    { q: "Meus dados ficam separados das outras lojas?", a: "Sim. Cada loja tem os dados isolados por regras de segurança no próprio banco de dados: ninguém além de você acessa suas vendas e clientes." },
-    { q: "Como funciona o pagamento?", a: "Você escolhe o plano e faz o cadastro. Em seguida combinamos o pagamento por PIX pelo WhatsApp e liberamos seu acesso no mesmo dia." },
-    { q: "Posso testar antes?", a: "Pode! Clique em “Ver demonstração” e use o sistema completo com dados de exemplo, sem cadastro." },
-    { q: "Funciona com impressora de cupom e leitor de código de barras?", a: "Sim. O cupom é impresso pelo próprio navegador em impressoras térmicas de 80 mm ou comuns, e o leitor de código de barras USB funciona direto na tela de venda." },
-    { q: "E se a assinatura vencer?", a: "O acesso fica pausado até a renovação, mas nenhum dado é apagado. Ao renovar, tudo volta exatamente como estava." },
-    { q: "Vocês fazem sistema sob medida?", a: `Sim! Desenvolvemos sistemas exclusivos para o seu negócio, com as funcionalidades que você precisar, a partir de ${formatBRL(CUSTOM_PLAN.price)}. Chame no WhatsApp para conversarmos sobre o seu projeto.` },
-    { q: "Vocês ajudam a cadastrar os produtos?", a: "Sim. No início ajudamos a configurar a loja e a organizar o cadastro dos produtos pelo WhatsApp." },
+    { q: "Quanto custa um site ou sistema?", a: "Depende do que o projeto precisa. Os sistemas prontos começam em planos mensais e projetos sob medida a partir de " + formatBRL(CUSTOM_PLAN.price) + ". Clique em “Fazer orçamento”, conte sua ideia e enviamos uma proposta sem compromisso." },
+    { q: "Quanto tempo leva para ficar pronto?", a: "Uma landing page costuma ficar pronta em poucos dias; sites, lojas e sistemas variam conforme o tamanho. O prazo combinado vai na proposta." },
+    { q: "Funciona no celular?", a: "Sim. Tudo é feito pensando primeiro no celular e funciona também no computador e no tablet." },
+    { q: "Vou conseguir atualizar sozinho?", a: "Sim. Quando faz sentido, o projeto vem com um painel para você mudar textos, fotos, preços e produtos sem precisar de programador." },
+    { q: "Vocês cuidam da hospedagem e do domínio?", a: "Sim. Ajudamos a registrar o domínio (ex.: suaempresa.com.br) e colocamos o projeto no ar em uma hospedagem rápida e segura." },
+    { q: "Têm sistema pronto para o meu segmento?", a: "Temos sistemas prontos para " + SEGMENTS.slice(0, 5).join(", ").toLowerCase() + " e outros — com a sua marca, nos planos mensal, anual ou vitalício." },
+    { q: "E depois da entrega?", a: "Seguimos com suporte pelo WhatsApp e fazemos melhorias e novas funções sempre que você precisar." },
 ];
 
 const TRUST: [LucideIcon, string, string][] = [
-    [Cloud, "Na nuvem", "Acesse de qualquer lugar"],
-    [Lock, "Seguro", "Cada loja isolada no banco"],
-    [Printer, "Cupom 80 mm", "Impressora térmica ou comum"],
+    [Sparkles, "Sob medida", "Feito para o seu negócio"],
+    [Smartphone, "Mobile first", "Perfeito no celular"],
+    [Cloud, "No ar com você", "Domínio e hospedagem"],
     [Headphones, "Suporte humano", "Direto pelo WhatsApp"],
 ];
 
-export default function LandingPage() {
-    const { enterDemo } = useSession();
+/* ------------------------------------------------------------------ Orçamento */
+
+const PROJECT_TYPES = [...SERVICES.map(s => s.title), "Sistema pronto (plano mensal/anual/vitalício)", "Outro"];
+
+/** Abre o formulário de orçamento, que monta a mensagem e envia pelo WhatsApp. */
+function useQuote() {
+    const [open, setOpen] = useState<null | { type?: string }>(null);
+    const modal = open ? <QuoteModal initialType={open.type} onClose={() => setOpen(null)} /> : null;
+    return { openQuote: (type?: string) => setOpen({ type }), quoteModal: modal };
+}
+
+function QuoteModal({ initialType, onClose }: { initialType?: string; onClose: () => void }) {
+    const [name, setName] = useState("");
+    const [business, setBusiness] = useState("");
+    const [type, setType] = useState(initialType || PROJECT_TYPES[0]);
+    const [idea, setIdea] = useState("");
+    const [deadline, setDeadline] = useState("");
+
+    useModalBehavior(onClose);
+
+    const message = [
+        "Olá! Quero fazer um orçamento com a *KT Sistemas* 🚀",
+        "",
+        `👤 *Nome:* ${name.trim()}`,
+        business.trim() ? `🏢 *Empresa/negócio:* ${business.trim()}` : null,
+        `🧩 *Projeto:* ${type}`,
+        idea.trim() ? `📝 *Ideia:* ${idea.trim()}` : null,
+        deadline ? `⏱️ *Prazo desejado:* ${deadline}` : null,
+    ].filter(l => l !== null).join("\n");
+
+    const ready = name.trim().length > 1;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-6" onClick={onClose}>
+            <div role="dialog" aria-modal="true" aria-label="Fazer orçamento" onClick={e => e.stopPropagation()} className="flex max-h-[92svh] w-full max-w-lg flex-col rounded-t-3xl border border-line bg-surface shadow-[var(--ui-shadow-lg)] sm:rounded-3xl">
+                <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
+                    <div>
+                        <h2 className="text-xl font-bold tracking-tight text-fg">Fazer orçamento</h2>
+                        <p className="mt-1 text-sm text-fg-subtle">Conte sua ideia. A mensagem vai pronta para o nosso WhatsApp.</p>
+                    </div>
+                    <button onClick={onClose} aria-label="Fechar" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-xl text-fg-subtle hover:bg-hover"><X size={18} /></button>
+                </div>
+                <div className="space-y-4 overflow-y-auto px-6 py-5">
+                    <Field label="Seu nome *"><input value={name} onChange={e => setName(e.target.value)} className="ui-input" placeholder="Como podemos te chamar?" autoFocus /></Field>
+                    <Field label="Empresa ou negócio"><input value={business} onChange={e => setBusiness(e.target.value)} className="ui-input" placeholder="Ex.: Barbearia do João" /></Field>
+                    <Field label="O que você precisa?">
+                        <select value={type} onChange={e => setType(e.target.value)} className="ui-input">
+                            {PROJECT_TYPES.map(t => <option key={t}>{t}</option>)}
+                        </select>
+                    </Field>
+                    <Field label="Conte um pouco da ideia"><textarea value={idea} onChange={e => setIdea(e.target.value)} rows={4} className="ui-input resize-none" placeholder="O que o site/sistema/app precisa fazer? Tem alguma referência?" /></Field>
+                    <Field label="Prazo desejado">
+                        <select value={deadline} onChange={e => setDeadline(e.target.value)} className="ui-input">
+                            <option value="">Sem pressa / a combinar</option>
+                            <option>O quanto antes</option>
+                            <option>Até 15 dias</option>
+                            <option>Até 1 mês</option>
+                            <option>Até 3 meses</option>
+                        </select>
+                    </Field>
+                </div>
+                <div className="border-t border-line px-6 py-4">
+                    <a
+                        href={ready ? whatsappLink(message) : undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-disabled={!ready}
+                        onClick={e => { if (!ready) e.preventDefault(); else onClose(); }}
+                        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-semibold text-white transition ${ready ? "bg-[#25d366] hover:brightness-95" : "cursor-not-allowed bg-[#25d366]/40"}`}
+                    >
+                        <Send size={17} /> Enviar pelo WhatsApp
+                    </a>
+                    <p className="mt-2 text-center text-xs text-fg-faint">{ready ? "Abre o WhatsApp com a mensagem pronta para enviar." : "Preencha seu nome para continuar."}</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+    return (
+        <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-fg">{label}</span>
+            {children}
+        </label>
+    );
+}
+
+/** Fecha com Esc e trava a rolagem da página enquanto a janela está aberta. */
+function useModalBehavior(onClose: () => void) {
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+        window.addEventListener("keydown", onKey);
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+    }, [onClose]);
+}
+
+/* ------------------------------------------------------------------ Estrutura comum */
+
+const NAV: [string, string][] = [["servicos", "Serviços"], ["projetos", "Projetos"], ["planos", "Planos"], ["como-trabalhamos", "Como trabalhamos"], ["duvidas", "Dúvidas"], ["contato", "Contato"]];
+
+function Header({ onQuote }: { onQuote: () => void }) {
     const { theme, toggleTheme } = useTheme();
     const [menu, setMenu] = useState(false);
-    const [faq, setFaq] = useState<number | null>(0);
+    const go = (id: string) => {
+        setMenu(false);
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+        else { navigate("/"); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 120); }
+    };
+    return (
+        <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-md">
+            <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
+                <a href="#/" aria-label={COMPANY.name}><KtLogo /></a>
+                <nav className="ml-4 hidden items-center gap-0.5 text-sm lg:flex">
+                    {NAV.map(([id, l]) => <button key={id} onClick={() => go(id)} className="rounded-lg px-3 py-1.5 text-fg-subtle hover:bg-hover hover:text-fg">{l}</button>)}
+                </nav>
+                <span className="flex-1" />
+                <button onClick={toggleTheme} aria-label="Alternar tema" className="flex h-9 w-9 items-center justify-center rounded-xl text-fg-subtle hover:bg-hover">{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</button>
+                <button onClick={onQuote} className="hidden h-9 items-center gap-2 rounded-xl bg-fg px-4 text-sm font-semibold text-bg hover:opacity-90 sm:inline-flex">
+                    Fazer orçamento
+                </button>
+                <button onClick={() => setMenu(!menu)} aria-label="Menu" className="flex h-9 w-9 items-center justify-center rounded-xl text-fg lg:hidden">{menu ? <X size={20} /> : <Menu size={20} />}</button>
+            </div>
+            {menu && (
+                <div className="space-y-1 border-t border-line px-4 py-3 lg:hidden">
+                    {NAV.map(([id, l]) => (
+                        <button key={id} onClick={() => go(id)} className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-fg hover:bg-hover">{l}</button>
+                    ))}
+                    <button onClick={() => { setMenu(false); onQuote(); }} className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white"><MessageCircle size={16} /> Fazer orçamento</button>
+                </div>
+            )}
+        </header>
+    );
+}
 
-    const demo = () => { enterDemo(); navigate("/"); };
-    const scrollTo = (id: string) => { setMenu(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
-    const links: [string, string][] = [["recursos", "Recursos"], ["como-funciona", "Como funciona"], ["projetos", "Projetos"], ["planos", "Planos"], ["duvidas", "Dúvidas"], ["contato", "Contato"]];
+function Footer({ onQuote }: { onQuote: () => void }) {
+    const go = (id: string) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+        else { navigate("/"); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 120); }
+    };
+    return (
+        <footer className="border-t border-line bg-surface">
+            <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
+                <div>
+                    <KtLogo />
+                    <p className="mt-3 max-w-xs text-sm text-fg-subtle">{COMPANY.tagline}.</p>
+                </div>
+                <div>
+                    <p className="text-sm font-semibold text-fg">Navegação</p>
+                    <ul className="mt-3 space-y-2 text-sm text-fg-subtle">
+                        <li><button onClick={() => go("servicos")} className="hover:text-fg">Serviços</button></li>
+                        <li><a href="#/projetos" className="hover:text-fg">Projetos</a></li>
+                        <li><button onClick={() => go("planos")} className="hover:text-fg">Planos</button></li>
+                        <li><button onClick={onQuote} className="hover:text-fg">Fazer orçamento</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <p className="text-sm font-semibold text-fg">Contato</p>
+                    <ul className="mt-3 space-y-2 text-sm text-fg-subtle">
+                        <li><a href={whatsappLink("Olá! Vim pelo site da KT Sistemas.")} target="_blank" rel="noreferrer" className="hover:text-fg">{COMPANY.whatsappDisplay}</a></li>
+                        <li><a href={`mailto:${COMPANY.email}`} className="break-all hover:text-fg">{COMPANY.email}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div className="border-t border-line">
+                <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-fg-faint sm:px-6">© {new Date().getFullYear()} {COMPANY.name}. Todos os direitos reservados.</p>
+            </div>
+        </footer>
+    );
+}
+
+/* ------------------------------------------------------------------ Página inicial */
+
+/** Quantos projetos aparecem na página inicial (o resto fica em “Ver mais projetos”). */
+const HOME_PROJECTS = 4;
+
+export default function LandingPage() {
+    const { openQuote, quoteModal } = useQuote();
+    const [project, setProject] = useState<PortfolioItem | null>(null);
 
     return (
         <div className="min-h-screen bg-bg font-sans text-fg-muted">
-            {/* Topo */}
-            <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-md">
-                <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-                    <a href="#/" aria-label={COMPANY.name}><KtLogo /></a>
-                    <nav className="ml-4 hidden items-center gap-0.5 text-sm md:flex">
-                        {links.map(([id, l]) => <button key={id} onClick={() => scrollTo(id)} className="rounded-lg px-3 py-1.5 text-fg-subtle hover:bg-hover hover:text-fg">{l}</button>)}
-                    </nav>
-                    <span className="flex-1" />
-                    <button onClick={toggleTheme} aria-label="Alternar tema" className="flex h-9 w-9 items-center justify-center rounded-xl text-fg-subtle hover:bg-hover">{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</button>
-                    <a href="#/entrar" className="hidden h-9 items-center rounded-xl px-3.5 text-sm font-medium text-fg hover:bg-hover sm:inline-flex">Entrar</a>
-                    <button onClick={demo} className="hidden h-9 items-center gap-2 rounded-xl bg-fg px-4 text-sm font-semibold text-bg hover:opacity-90 sm:inline-flex">
-                        Ver demonstração
-                    </button>
-                    <button onClick={() => setMenu(!menu)} aria-label="Menu" className="flex h-9 w-9 items-center justify-center rounded-xl text-fg md:hidden">{menu ? <X size={20} /> : <Menu size={20} />}</button>
-                </div>
-                {menu && (
-                    <div className="space-y-1 border-t border-line px-4 py-3 md:hidden">
-                        {links.map(([id, l]) => (
-                            <button key={id} onClick={() => scrollTo(id)} className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-fg hover:bg-hover">{l}</button>
-                        ))}
-                        <a href="#/entrar" className="block rounded-xl px-3 py-2.5 text-sm font-medium text-fg hover:bg-hover">Entrar</a>
-                        <button onClick={demo} className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white"><PlayCircle size={16} /> Ver demonstração</button>
-                    </div>
-                )}
-            </header>
+            <Header onQuote={() => openQuote()} />
 
             {/* Hero */}
             <section className="relative overflow-hidden">
@@ -129,29 +261,29 @@ export default function LandingPage() {
                 <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20">
                     <div>
                         <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-fg-muted shadow-[var(--ui-shadow)]">
-                            <span className="h-1.5 w-1.5 rounded-full bg-success" /> Para lojas de celular e assistência técnica
+                            <span className="h-1.5 w-1.5 rounded-full bg-success" /> Sites · E-commerce · Aplicativos · Sistemas
                         </span>
                         <h1 className="mt-6 text-[38px] font-bold leading-[1.07] tracking-[-0.025em] text-fg sm:text-[52px]">
-                            A gestão da sua loja, <span className="text-fg-subtle">organizada do balcão ao caixa.</span>
+                            Sua ideia no ar, <span className="text-fg-subtle">do jeito que o seu negócio precisa.</span>
                         </h1>
                         <p className="mt-6 max-w-xl text-lg leading-relaxed text-fg-subtle">
-                            Vendas, estoque, fiado, ordens de serviço e fechamento de caixa num só lugar — com a logo e as cores da sua loja.
+                            Criamos sites, lojas virtuais, aplicativos e sistemas sob medida — bonitos, rápidos, perfeitos no celular e fáceis de usar.
                         </p>
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                            <button onClick={demo} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-[15px] font-semibold text-white shadow-[var(--ui-shadow-md)] hover:bg-primary-hover">
-                                <PlayCircle size={18} /> Testar a demonstração
+                            <button onClick={() => openQuote()} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-[15px] font-semibold text-white shadow-[var(--ui-shadow-md)] hover:bg-primary-hover">
+                                <MessageCircle size={18} /> Fazer orçamento
                             </button>
-                            <button onClick={() => scrollTo("planos")} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-6 text-[15px] font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">
-                                Ver planos <ArrowRight size={16} />
-                            </button>
+                            <a href="#/projetos" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-6 text-[15px] font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">
+                                Ver projetos <ArrowRight size={16} />
+                            </a>
                         </div>
                         <ul className="mt-8 grid max-w-lg grid-cols-2 gap-x-6 gap-y-2.5 text-sm text-fg-subtle">
-                            {["Sem instalação", "Teste sem cadastro", "Dados isolados por loja", `A partir de ${formatBRL(PLANS[0].price)}/mês`].map(t => (
+                            {["Orçamento sem compromisso", "Projeto sob medida", "Painel para você editar", `Planos a partir de ${formatBRL(PLANS[0].price)}/mês`].map(t => (
                                 <li key={t} className="flex items-center gap-2"><Check size={15} className="shrink-0 text-success" />{t}</li>
                             ))}
                         </ul>
                     </div>
-                    <ProductPreview />
+                    <HeroShowcase />
                 </div>
             </section>
 
@@ -167,105 +299,62 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Recursos */}
-            <section id="recursos" className="scroll-mt-16 py-20 sm:py-24">
+            {/* Serviços */}
+            <section id="servicos" className="scroll-mt-16 py-20 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <SectionTitle eyebrow="Recursos" title="Tudo que a loja precisa no dia a dia" text="Do balcão ao fechamento do caixa, sem planilhas e sem papel." />
+                    <SectionTitle eyebrow="Serviços" title="Tudo que o seu negócio precisa na internet" text="Do primeiro site ao sistema completo de gestão — cuidamos de tudo, do layout ao suporte." />
                     <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-[var(--ui-shadow)] sm:grid-cols-2 lg:grid-cols-4">
-                        {FEATURES.map(f => (
-                            <div key={f.title} className="bg-surface p-6 transition-colors hover:bg-subtle">
-                                <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-subtle text-fg-muted"><f.icon size={19} /></span>
+                        {SERVICES.map(f => (
+                            <button key={f.title} onClick={() => openQuote(f.title)} className="group bg-surface p-6 text-left transition-colors hover:bg-subtle">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-subtle text-fg-muted group-hover:text-primary"><f.icon size={19} /></span>
                                 <h3 className="mt-4 font-semibold text-fg">{f.title}</h3>
                                 <p className="mt-1.5 text-sm leading-relaxed text-fg-subtle">{f.text}</p>
-                            </div>
+                                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary-text opacity-0 transition-opacity group-hover:opacity-100">Pedir orçamento <ArrowRight size={13} /></span>
+                            </button>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Destaques */}
-            <section id="como-funciona" className="scroll-mt-16 border-y border-line bg-surface py-20 sm:py-24">
-                <div className="mx-auto max-w-6xl space-y-20 px-4 sm:px-6 lg:space-y-28">
-                    {HIGHLIGHTS.map((h, i) => (
-                        <div key={h.tag} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-                            <div className={i % 2 ? "lg:order-2" : ""}>
-                                <p className="text-sm font-semibold text-primary-text">{h.tag}</p>
-                                <h3 className="mt-2 text-2xl font-bold tracking-tight text-fg sm:text-3xl">{h.title}</h3>
-                                <p className="mt-4 leading-relaxed text-fg-subtle">{h.text}</p>
-                                <ul className="mt-6 space-y-3">
-                                    {h.points.map(p => (
-                                        <li key={p} className="flex items-start gap-3 text-sm text-fg-muted">
-                                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success-soft text-success"><Check size={12} strokeWidth={3} /></span>{p}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className={i % 2 ? "lg:order-1" : ""}><HighlightPreview kind={h.preview} /></div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Comparação */}
-            <section className="py-20 sm:py-24">
-                <div className="mx-auto max-w-3xl px-4 sm:px-6">
-                    <SectionTitle center eyebrow="Por que trocar" title="Caderno e planilha não dão conta" text="Veja o que muda quando a loja passa a usar um sistema de verdade." />
-                    <div className="mt-10 overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--ui-shadow)]">
-                        <div className="grid grid-cols-[1fr_76px_92px] border-b border-line bg-subtle px-5 py-3 text-xs font-semibold text-fg-subtle sm:grid-cols-[1fr_120px_120px]">
-                            <span>Na rotina da loja</span><span className="text-center">Caderno</span><span className="text-center text-fg">{COMPANY.name}</span>
-                        </div>
-                        {COMPARISON.map(t => (
-                            <div key={t} className="grid grid-cols-[1fr_76px_92px] items-center border-b border-line px-5 py-3.5 text-sm last:border-b-0 sm:grid-cols-[1fr_120px_120px]">
-                                <span className="text-fg-muted">{t}</span>
-                                <span className="flex justify-center"><Minus size={17} className="text-fg-faint" /></span>
-                                <span className="flex justify-center"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-success-soft text-success"><Check size={14} strokeWidth={3} /></span></span>
-                            </div>
-                        ))}
+            {/* Projetos */}
+            <section id="projetos" className="scroll-mt-16 border-y border-line bg-surface py-20 sm:py-24">
+                <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                    <div className="flex flex-wrap items-end justify-between gap-6">
+                        <SectionTitle eyebrow="Projetos" title="Sistemas que já estão rodando" text="Alguns dos projetos que desenvolvemos e que estão em uso hoje." />
+                        <a href="#/projetos" className="hidden h-10 items-center gap-2 rounded-xl border border-line bg-bg px-4 text-sm font-semibold text-fg hover:bg-hover sm:inline-flex">Ver mais projetos <ArrowRight size={15} /></a>
+                    </div>
+                    <div className="mt-12 grid gap-6 md:grid-cols-2">
+                        {PORTFOLIO.slice(0, HOME_PROJECTS).map(p => <ProjectCard key={p.id} item={p} onOpen={() => setProject(p)} />)}
+                    </div>
+                    <div className="mt-10 flex justify-center">
+                        <a href="#/projetos" className="inline-flex h-11 items-center gap-2 rounded-xl border border-line bg-bg px-5 text-sm font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">Ver mais projetos <ArrowRight size={15} /></a>
                     </div>
                 </div>
             </section>
-
-            {/* Projetos no ar */}
-            {PORTFOLIO.length > 0 && (
-                <section id="projetos" className="scroll-mt-16 py-20 sm:py-24">
-                    <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                        <SectionTitle eyebrow="Projetos" title="Sistemas que já estão rodando" text="Alguns dos sistemas que desenvolvemos e que estão em uso hoje." />
-                        <div className="mt-12 grid gap-6 md:grid-cols-2">
-                            {PORTFOLIO.map(p => <PortfolioCard key={p.name} item={p} />)}
-                        </div>
-                    </div>
-                </section>
-            )}
 
             {/* Planos */}
-            <section id="planos" className="scroll-mt-16 border-y border-line bg-surface py-20 sm:py-24">
+            <section id="planos" className="scroll-mt-16 py-20 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <SectionTitle center eyebrow="Planos" title="Escolha o plano ideal para sua loja" text="Todos os planos incluem todos os recursos, atualizações e suporte pelo WhatsApp." />
+                    <SectionTitle center eyebrow="Planos" title="Sistemas prontos para o seu segmento" text="Comece rápido com um sistema pronto, com a sua marca — ou peça um projeto exclusivo." />
+                    <div className="mx-auto mt-6 flex max-w-3xl flex-wrap justify-center gap-2">
+                        {SEGMENTS.map(s => <span key={s} className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-fg-muted">{s}</span>)}
+                    </div>
                     <PlanCards />
-                    <CustomPlanCard />
-                    <p className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-fg-subtle">
-                        <span className="inline-flex items-center gap-2"><Zap size={15} className="text-fg-faint" /> Liberação no mesmo dia</span>
-                        <span className="inline-flex items-center gap-2"><QrCode size={15} className="text-fg-faint" /> Pagamento por PIX</span>
-                        <span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-fg-faint" /> Dados preservados se a assinatura vencer</span>
-                    </p>
+                    <CustomPlanCard onQuote={() => openQuote("Sistema sob medida")} />
                 </div>
             </section>
 
-            {/* Como começar */}
-            <section className="py-20 sm:py-24">
+            {/* Como trabalhamos */}
+            <section id="como-trabalhamos" className="scroll-mt-16 border-y border-line bg-surface py-20 sm:py-24">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <SectionTitle center eyebrow="Começar é simples" title="Sua loja funcionando em 3 passos" />
-                    <ol className="relative mt-12 grid gap-10 md:grid-cols-3 md:gap-6">
-                        <span className="pointer-events-none absolute left-[17%] right-[17%] top-5 hidden h-px bg-line-strong md:block" />
-                        {[
-                            ["Escolha o plano e cadastre a loja", "Informe o nome da loja, envie sua logo e crie seu acesso."],
-                            ["Combine o pagamento", "Fale com a gente pelo WhatsApp e pague por PIX."],
-                            ["Comece a vender", "Liberamos o acesso e o sistema já abre com a cara da sua loja."],
-                        ].map(([t, d], i) => (
-                            <li key={t} className="relative text-center">
+                    <SectionTitle center eyebrow="Como trabalhamos" title="Do primeiro contato ao projeto no ar" />
+                    <ol className="relative mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+                        <span className="pointer-events-none absolute left-[12%] right-[12%] top-5 hidden h-px bg-line-strong lg:block" />
+                        {STEPS.map((s, i) => (
+                            <li key={s.title} className="relative text-center">
                                 <span className="relative mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-line-strong bg-surface text-sm font-semibold text-fg shadow-[var(--ui-shadow)]">{i + 1}</span>
-                                <h3 className="mt-5 font-semibold text-fg">{t}</h3>
-                                <p className="mx-auto mt-1.5 max-w-xs text-sm text-fg-subtle">{d}</p>
+                                <h3 className="mt-5 flex items-center justify-center gap-2 font-semibold text-fg"><s.icon size={16} className="text-fg-faint" />{s.title}</h3>
+                                <p className="mx-auto mt-1.5 max-w-xs text-sm text-fg-subtle">{s.text}</p>
                             </li>
                         ))}
                     </ol>
@@ -273,84 +362,50 @@ export default function LandingPage() {
             </section>
 
             {/* Dúvidas */}
-            <section id="duvidas" className="scroll-mt-16 border-t border-line bg-surface py-20 sm:py-24">
-                <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr]">
-                    <div>
-                        <SectionTitle eyebrow="Dúvidas" title="Perguntas frequentes" text="Não achou sua resposta? Chame a gente no WhatsApp." />
-                        <a href={whatsappLink("Olá! Tenho uma dúvida sobre o KT Sistemas.")} target="_blank" rel="noreferrer" className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">
-                            <MessageCircle size={16} /> Falar no WhatsApp
-                        </a>
-                    </div>
-                    <div className="divide-y divide-line rounded-2xl border border-line bg-bg">
-                        {FAQ.map((f, i) => (
-                            <div key={f.q}>
-                                <button onClick={() => setFaq(faq === i ? null : i)} aria-expanded={faq === i} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-[15px] font-medium text-fg">
-                                    {f.q}<ChevronDown size={18} className={`shrink-0 text-fg-faint transition-transform ${faq === i ? "rotate-180" : ""}`} />
-                                </button>
-                                {faq === i && <p className="-mt-1 px-5 pb-5 text-sm leading-relaxed text-fg-subtle">{f.a}</p>}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <Faq />
 
             {/* Contato */}
-            <section id="contato" className="scroll-mt-16 px-4 py-20 sm:px-6">
-                <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-nav px-6 py-14 text-white sm:px-14 sm:py-16">
-                    <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgb(255_255_255/0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
-                    <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#4b6bdc]/25 blur-[100px]" />
-                    <div className="relative grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
-                        <div>
-                            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Gostou do sistema?</h2>
-                            <p className="mt-3 max-w-xl text-white/65">Fale com a gente para tirar dúvidas ou contratar. Ajudamos a configurar sua loja e a cadastrar os produtos.</p>
-                            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                                <a href={whatsappLink("Olá! Vi o KT Sistemas e quero saber mais.")} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-[#0f172a] hover:bg-white/90">
-                                    <MessageCircle size={18} /> Chamar no WhatsApp
-                                </a>
-                                <a href={mailtoLink("Quero conhecer o KT Sistemas", "Olá! Gostaria de mais informações sobre o sistema.")} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 font-semibold text-white hover:bg-white/10">
-                                    <Mail size={18} /> Enviar e-mail
-                                </a>
-                            </div>
-                        </div>
-                        <div className="space-y-3.5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm">
-                            <p className="flex items-center gap-3"><MessageCircle size={17} className="shrink-0 text-white/50" /> {COMPANY.whatsappDisplay}</p>
-                            <p className="flex items-center gap-3 break-all"><Mail size={17} className="shrink-0 text-white/50" /> {COMPANY.email}</p>
-                            <p className="flex items-center gap-3"><Headphones size={17} className="shrink-0 text-white/50" /> Ajuda para configurar a loja</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <ContactBand onQuote={() => openQuote()} />
 
-            <footer className="border-t border-line bg-surface">
-                <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
-                    <div>
-                        <KtLogo />
-                        <p className="mt-3 max-w-xs text-sm text-fg-subtle">{COMPANY.tagline}.</p>
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold text-fg">Produto</p>
-                        <ul className="mt-3 space-y-2 text-sm text-fg-subtle">
-                            <li><button onClick={() => scrollTo("recursos")} className="hover:text-fg">Recursos</button></li>
-                            <li><button onClick={() => scrollTo("planos")} className="hover:text-fg">Planos</button></li>
-                            <li><button onClick={demo} className="hover:text-fg">Demonstração</button></li>
-                            <li><a href="#/entrar" className="hover:text-fg">Entrar</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold text-fg">Contato</p>
-                        <ul className="mt-3 space-y-2 text-sm text-fg-subtle">
-                            <li><a href={whatsappLink("Olá!")} target="_blank" rel="noreferrer" className="hover:text-fg">{COMPANY.whatsappDisplay}</a></li>
-                            <li><a href={`mailto:${COMPANY.email}`} className="break-all hover:text-fg">{COMPANY.email}</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="border-t border-line">
-                    <p className="mx-auto flex max-w-6xl items-center gap-1.5 px-4 py-5 text-xs text-fg-faint sm:px-6"><ShieldCheck size={13} /> © {new Date().getFullYear()} {COMPANY.name}. Todos os direitos reservados.</p>
-                </div>
-            </footer>
+            <Footer onQuote={() => openQuote()} />
+            {project && <ProjectModal item={project} onClose={() => setProject(null)} onQuote={() => { setProject(null); openQuote(); }} />}
+            {quoteModal}
         </div>
     );
 }
+
+/* ------------------------------------------------------------------ Página de projetos */
+
+export function ProjectsPage() {
+    const { openQuote, quoteModal } = useQuote();
+    const [project, setProject] = useState<PortfolioItem | null>(null);
+    return (
+        <div className="min-h-screen bg-bg font-sans text-fg-muted">
+            <Header onQuote={() => openQuote()} />
+            <section className="py-16 sm:py-20">
+                <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                    <a href="#/" className="inline-flex items-center gap-1.5 text-sm font-medium text-fg-subtle hover:text-fg"><ChevronLeft size={16} /> Voltar ao início</a>
+                    <div className="mt-6">
+                        <SectionTitle eyebrow="Projetos" title="Nosso portfólio" text="Sites, sistemas e aplicativos que desenvolvemos e que estão em uso hoje. Clique para ver os detalhes." />
+                    </div>
+                    <div className="mt-12 grid gap-6 md:grid-cols-2">
+                        {PORTFOLIO.map(p => <ProjectCard key={p.id} item={p} onOpen={() => setProject(p)} />)}
+                    </div>
+                    <div className="mt-14 rounded-2xl border border-dashed border-line-strong bg-surface p-8 text-center">
+                        <p className="text-lg font-semibold text-fg">Novos projetos em breve por aqui.</p>
+                        <p className="mt-1 text-sm text-fg-subtle">Quer que o próximo seja o seu?</p>
+                        <button onClick={() => openQuote()} className="mt-5 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"><MessageCircle size={16} /> Fazer orçamento</button>
+                    </div>
+                </div>
+            </section>
+            <Footer onQuote={() => openQuote()} />
+            {project && <ProjectModal item={project} onClose={() => setProject(null)} onQuote={() => { setProject(null); openQuote(); }} />}
+            {quoteModal}
+        </div>
+    );
+}
+
+/* ------------------------------------------------------------------ Blocos */
 
 function SectionTitle({ eyebrow, title, text, center }: { eyebrow: string; title: string; text?: string; center?: boolean }) {
     return (
@@ -362,132 +417,87 @@ function SectionTitle({ eyebrow, title, text, center }: { eyebrow: string; title
     );
 }
 
-/* ------------------------------------------------------------------ Prévias ilustrativas */
-
-function Window({ children, title }: { children: ReactNode; title?: string }) {
+/** Vitrine do topo: prévias reais dos projetos em janelas de navegador. */
+function HeroShowcase() {
+    const [a, b] = PORTFOLIO;
+    if (!a) return null;
     return (
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--ui-shadow-lg)]">
-            <div className="flex items-center gap-1.5 border-b border-line bg-subtle px-4 py-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-line-strong" /><span className="h-2.5 w-2.5 rounded-full bg-line-strong" /><span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-                {title && <span className="ml-3 text-[11px] font-medium text-fg-faint">{title}</span>}
-            </div>
-            {children}
+        <div className="relative pb-10 sm:pb-14">
+            <BrowserFrame src={a.images[0]} alt={a.name} />
+            {b && (
+                <div className="absolute -bottom-2 -left-4 w-[62%] sm:-left-8">
+                    <BrowserFrame src={b.images[0]} alt={b.name} small />
+                </div>
+            )}
         </div>
     );
 }
 
-function ProductPreview() {
-    const bars = [40, 28, 55, 36, 70, 58, 42, 50, 66, 54, 84, 72];
+function BrowserFrame({ src, alt, small }: { src: string; alt: string; small?: boolean }) {
     return (
-        <div className="relative">
-            <Window title="Visão geral">
-                <div className="flex">
-                    <div className="hidden w-36 shrink-0 flex-col gap-1.5 bg-nav p-3 sm:flex">
-                        <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/10"><Store size={12} className="text-white/70" /></span><span className="h-2 w-14 rounded bg-white/25" /></div>
-                        {[1, 0, 0, 0, 0, 0].map((a, i) => <span key={i} className={`flex h-6 items-center gap-2 rounded-md px-2 ${a ? "bg-white/10" : ""}`}><span className="h-2 w-2 rounded-sm bg-white/35" /><span className="h-1.5 w-12 rounded bg-white/20" /></span>)}
-                    </div>
-                    <div className="flex-1 space-y-3 bg-bg p-4">
-                        <div className="flex items-center justify-between"><span className="h-3 w-28 rounded bg-fg/70" /><span className="h-5 w-24 rounded-md border border-line bg-surface" /></div>
-                        <div className="grid grid-cols-3 gap-2">
-                            {[["Faturamento", "R$ 1.521", "+12%"], ["Ticket médio", "R$ 89", "+4%"], ["Fiado", "R$ 303", "-8%"]].map(([l, v, d]) => (
-                                <div key={l} className="rounded-lg border border-line bg-surface p-2.5">
-                                    <span className="block truncate text-[10px] text-fg-subtle">{l}</span>
-                                    <span className="mt-0.5 block text-sm font-semibold text-fg">{v}</span>
-                                    <span className={`mt-1 inline-block rounded px-1 text-[9px] font-semibold ${d.startsWith("+") ? "bg-success-soft text-success" : "bg-subtle text-fg-subtle"}`}>{d}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="rounded-lg border border-line bg-surface p-3">
-                            <div className="flex h-24 items-end gap-1.5">
-                                {bars.map((h, i) => <span key={i} className={`flex-1 rounded-t-[3px] ${i === bars.length - 1 ? "bg-primary" : "bg-primary/25"}`} style={{ height: `${h}%` }} />)}
-                            </div>
-                        </div>
-                        <div className="space-y-2 rounded-lg border border-line bg-surface p-3">
-                            {[["Película 3D iPhone 15", "PIX"], ["Carregador turbo 20W", "Cartão"], ["Capa anti-impacto A54", "Dinheiro"]].map(([n, m]) => (
-                                <div key={n} className="flex items-center justify-between gap-2 text-[11px]"><span className="truncate text-fg-muted">{n}</span><span className="rounded border border-line bg-subtle px-1.5 text-fg-subtle">{m}</span></div>
-                            ))}
-                        </div>
-                    </div>
+        <div className={`overflow-hidden rounded-2xl border border-line bg-surface ${small ? "shadow-[var(--ui-shadow-lg)] ring-4 ring-bg" : "shadow-[var(--ui-shadow-lg)]"}`}>
+            <div className="flex items-center gap-1.5 border-b border-line bg-subtle px-3 py-2">
+                <span className="h-2 w-2 rounded-full bg-line-strong" /><span className="h-2 w-2 rounded-full bg-line-strong" /><span className="h-2 w-2 rounded-full bg-line-strong" />
+            </div>
+            <img src={src} alt={`Prévia: ${alt}`} className="block aspect-[16/10] w-full object-cover object-top" />
+        </div>
+    );
+}
+
+function ProjectCard({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
+    return (
+        <article className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-bg shadow-[var(--ui-shadow)] transition-shadow hover:shadow-[var(--ui-shadow-lg)]">
+            <button onClick={onOpen} className="relative block aspect-[16/10] overflow-hidden border-b border-line bg-subtle" aria-label={`Ver detalhes de ${item.name}`}>
+                <img src={item.images[0]} alt={`Prévia do projeto ${item.name}`} loading="lazy" className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]" />
+                {item.images.length > 1 && <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white">{item.images.length} fotos</span>}
+            </button>
+            <div className="flex flex-1 flex-col p-5 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{item.category}</p>
+                <h3 className="mt-1.5 text-lg font-semibold text-fg">{item.name}</h3>
+                <p className="mt-1.5 flex-1 text-sm leading-relaxed text-fg-subtle">{item.summary}</p>
+                <button onClick={onOpen} className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-fg hover:bg-hover">
+                    Ver detalhes <ArrowRight size={15} />
+                </button>
+            </div>
+        </article>
+    );
+}
+
+/** Detalhes do projeto: fotos, descrição e funcionalidades (sem link para o sistema). */
+function ProjectModal({ item, onClose, onQuote }: { item: PortfolioItem; onClose: () => void; onQuote: () => void }) {
+    const [i, setI] = useState(0);
+    useModalBehavior(onClose);
+    const n = item.images.length;
+    return (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-6" onClick={onClose}>
+            <div role="dialog" aria-modal="true" aria-label={item.name} onClick={e => e.stopPropagation()} className="flex max-h-[94svh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border border-line bg-surface shadow-[var(--ui-shadow-lg)] sm:rounded-3xl">
+                <div className="relative bg-subtle">
+                    <img src={item.images[i]} alt={`${item.name} — imagem ${i + 1}`} className="block max-h-[52svh] w-full object-contain" />
+                    {n > 1 && (
+                        <>
+                            <button onClick={() => setI((i - 1 + n) % n)} aria-label="Imagem anterior" className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white hover:bg-black/70"><ChevronLeft size={20} /></button>
+                            <button onClick={() => setI((i + 1) % n)} aria-label="Próxima imagem" className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white hover:bg-black/70"><ChevronRight size={20} /></button>
+                            <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white">{i + 1} / {n}</span>
+                        </>
+                    )}
+                    <button onClick={onClose} aria-label="Fechar" className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white hover:bg-black/70"><X size={18} /></button>
                 </div>
-            </Window>
-            <div className="absolute -bottom-6 -left-4 hidden w-60 rounded-xl border border-line bg-surface p-3.5 shadow-[var(--ui-shadow-lg)] sm:block">
-                <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-soft text-success"><Check size={16} strokeWidth={2.5} /></span>
-                    <div><p className="text-xs font-semibold text-fg">Venda registrada</p><p className="text-[11px] text-fg-subtle">R$ 129,90 · estoque atualizado</p></div>
+                <div className="overflow-y-auto p-6 sm:p-8">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{item.category}</p>
+                    <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-fg">{item.name}</h2>
+                    <p className="mt-3 leading-relaxed text-fg-subtle">{item.details}</p>
+                    <ul className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
+                        {item.highlights.map(h => <li key={h} className="flex gap-2.5"><Check size={16} className="mt-0.5 shrink-0 text-success" /><span>{h}</span></li>)}
+                    </ul>
+                    <div className="mt-8 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm text-fg-subtle">Quer um projeto parecido para o seu negócio?</p>
+                        <button onClick={onQuote} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"><MessageCircle size={16} /> Fazer orçamento</button>
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
-
-const STATUS_CLASS = {
-    info: "border-info/20 bg-info-soft text-info",
-    success: "border-success/20 bg-success-soft text-success",
-    warning: "border-warning/20 bg-warning-soft text-warning",
-    neutral: "border-line bg-subtle text-fg-subtle",
-};
-
-function HighlightPreview({ kind }: { kind: "sale" | "orders" | "cash" }) {
-    if (kind === "sale") {
-        const items: [string, number, number][] = [["Película 3D iPhone 15", 1, 39.9], ["Carregador turbo 20W", 1, 59.9], ["Cabo USB-C 1m", 2, 15]];
-        return (
-            <Window title="Nova venda">
-                <div className="space-y-3 p-5">
-                    <div className="flex h-10 items-center gap-2 rounded-lg border border-line bg-bg px-3 text-sm text-fg-faint"><ScanBarcode size={16} /> Buscar produto ou ler código…</div>
-                    {items.map(([n, q, p]) => (
-                        <div key={n} className="flex items-center justify-between gap-3 border-b border-line pb-2.5 text-sm last:border-b-0">
-                            <span className="truncate text-fg">{n} <span className="text-fg-faint">× {q}</span></span>
-                            <span className="font-medium text-fg tabular">{formatBRL(q * p)}</span>
-                        </div>
-                    ))}
-                    <div className="grid grid-cols-4 gap-2 pt-1 text-center text-[11px] font-medium">
-                        {["PIX", "Cartão", "Dinheiro", "Fiado"].map((m, i) => <span key={m} className={`rounded-lg border py-2 ${i === 0 ? "border-primary/40 bg-primary-soft text-primary-text" : "border-line text-fg-subtle"}`}>{m}</span>)}
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-subtle px-4 py-3"><span className="text-sm text-fg-subtle">Total</span><span className="text-lg font-semibold text-fg tabular">{formatBRL(129.8)}</span></div>
-                </div>
-            </Window>
-        );
-    }
-    if (kind === "orders") {
-        const rows: [string, string, string, keyof typeof STATUS_CLASS][] = [
-            ["iPhone 12", "Troca de tela", "Em reparo", "info"], ["Galaxy A32", "Conector de carga", "Pronto", "success"],
-            ["Moto G60", "Bateria", "Peça pedida", "warning"], ["Redmi Note 11", "Não liga", "Aguardando", "neutral"],
-        ];
-        return (
-            <Window title="Ordens de serviço">
-                <div className="divide-y divide-line">
-                    {rows.map(([d, i, s, t], n) => (
-                        <div key={d} className="flex items-center gap-3 px-5 py-3.5">
-                            <span className="text-xs font-medium text-fg-faint tabular">#{1042 + n}</span>
-                            <div className="min-w-0 flex-1"><p className="text-sm font-medium text-fg">{d}</p><p className="truncate text-xs text-fg-subtle">{i}</p></div>
-                            <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${STATUS_CLASS[t]}`}>{s}</span>
-                        </div>
-                    ))}
-                </div>
-            </Window>
-        );
-    }
-    const mix: [string, number, string, number][] = [["PIX", 812.4, "bg-chart-2", 52], ["Cartão", 455, "bg-chart-1", 29], ["Dinheiro", 298.5, "bg-chart-3", 19]];
-    return (
-        <Window title="Fechamento de caixa">
-            <div className="space-y-4 p-5">
-                {mix.map(([l, v, c, p]) => (
-                    <div key={l}>
-                        <div className="flex justify-between text-sm"><span className="flex items-center gap-2 text-fg-muted"><span className={`h-2 w-2 rounded-full ${c}`} />{l}</span><span className="font-medium text-fg tabular">{formatBRL(v)}</span></div>
-                        <div className="mt-1.5 h-1.5 rounded-full bg-hover"><div className={`h-full rounded-full ${c}`} style={{ width: `${p}%` }} /></div>
-                    </div>
-                ))}
-                <div className="grid grid-cols-3 gap-2 border-t border-line pt-4 text-center">
-                    {[["Esperado", "R$ 448,50", "text-fg"], ["Contado", "R$ 450,00", "text-fg"], ["Diferença", "+ R$ 1,50", "text-success"]].map(([l, v, c]) => (
-                        <div key={l} className="rounded-lg bg-subtle px-2 py-2.5"><p className="text-[11px] text-fg-subtle">{l}</p><p className={`text-sm font-semibold tabular ${c}`}>{v}</p></div>
-                    ))}
-                </div>
-            </div>
-        </Window>
-    );
-}
-
-/* ------------------------------------------------------------------ Planos */
 
 export function PlanCards({ compact = false }: { compact?: boolean }) {
     return (
@@ -510,8 +520,13 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
                             {p.id === "anual" && `Equivale a ${formatBRL(p.price / 12)}/mês`}
                             {p.id === "vitalicio" && "Sem mensalidade"}
                         </p>
-                        <a href={`#/cadastro?plano=${p.id}`} className={`mt-6 inline-flex h-11 items-center justify-center rounded-xl text-sm font-semibold transition-colors ${featured ? "bg-primary text-white shadow-[var(--ui-shadow-md)] hover:bg-primary-hover" : "border border-line bg-surface text-fg hover:bg-hover"}`}>
-                            Assinar plano {p.name.toLowerCase()}
+                        <a
+                            href={whatsappLink(`Olá! Tenho interesse no plano *${p.name}* (a partir de ${formatBRL(p.price)}${p.period.startsWith("/") ? p.period : " - " + p.period}) de um sistema pronto da KT Sistemas.`)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors ${featured ? "bg-primary text-white shadow-[var(--ui-shadow-md)] hover:bg-primary-hover" : "border border-line bg-surface text-fg hover:bg-hover"}`}
+                        >
+                            <MessageCircle size={16} /> Quero o plano {p.name.toLowerCase()}
                         </a>
                         {!compact && (
                             <ul className="mt-7 flex-1 space-y-3 border-t border-line pt-6 text-sm">
@@ -525,7 +540,7 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
     );
 }
 
-function CustomPlanCard() {
+function CustomPlanCard({ onQuote }: { onQuote: () => void }) {
     return (
         <div className="relative mt-5 overflow-hidden rounded-2xl bg-nav p-6 text-white shadow-[var(--ui-shadow-lg)] sm:p-8">
             <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#4b6bdc]/30 blur-[90px]" />
@@ -538,14 +553,9 @@ function CustomPlanCard() {
                         <span className="w-full text-xs font-medium text-white/60">a partir de</span>
                         <span className="text-[34px] font-bold tracking-tight tabular">{formatBRL(CUSTOM_PLAN.price)}</span>
                     </p>
-                    <a
-                        href={whatsappLink("Olá! Tenho interesse em um sistema sob medida para o meu negócio.")}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-[#0f172a] hover:bg-white/90"
-                    >
-                        <MessageCircle size={16} /> Solicitar orçamento
-                    </a>
+                    <button onClick={onQuote} className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-[#0f172a] hover:bg-white/90">
+                        <MessageCircle size={16} /> Fazer orçamento
+                    </button>
                 </div>
                 <ul className="grid gap-3 text-sm sm:grid-cols-2">
                     {CUSTOM_PLAN.features.map(f => (
@@ -557,26 +567,58 @@ function CustomPlanCard() {
     );
 }
 
-function PortfolioCard({ item }: { item: (typeof PORTFOLIO)[number] }) {
-    const body = (
-        <>
-            <div className="relative aspect-[16/10] overflow-hidden border-b border-line bg-subtle">
-                <img src={item.image} alt={`Prévia do sistema ${item.name}`} loading="lazy" className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]" />
+function Faq() {
+    const [open, setOpen] = useState<number | null>(0);
+    return (
+        <section id="duvidas" className="scroll-mt-16 py-20 sm:py-24">
+            <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr]">
+                <div>
+                    <SectionTitle eyebrow="Dúvidas" title="Perguntas frequentes" text="Não achou sua resposta? Chame a gente no WhatsApp." />
+                    <a href={whatsappLink("Olá! Tenho uma dúvida sobre os serviços da KT Sistemas.")} target="_blank" rel="noreferrer" className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">
+                        <MessageCircle size={16} /> Falar no WhatsApp
+                    </a>
+                </div>
+                <div className="divide-y divide-line rounded-2xl border border-line bg-surface">
+                    {FAQ.map((f, i) => (
+                        <div key={f.q}>
+                            <button onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-[15px] font-medium text-fg">
+                                {f.q}<ChevronDown size={18} className={`shrink-0 text-fg-faint transition-transform ${open === i ? "rotate-180" : ""}`} />
+                            </button>
+                            {open === i && <p className="-mt-1 px-5 pb-5 text-sm leading-relaxed text-fg-subtle">{f.a}</p>}
+                        </div>
+                    ))}
+                </div>
             </div>
-            <div className="p-5 sm:p-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{item.category}</p>
-                <h3 className="mt-1.5 flex items-center gap-2 text-lg font-semibold text-fg">
-                    {item.name}
-                    {item.url && <ArrowRight size={16} className="text-fg-faint transition-transform group-hover:translate-x-0.5" />}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-fg-subtle">{item.description}</p>
-            </div>
-        </>
+        </section>
     );
-    const cls = "group block overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--ui-shadow)] transition-shadow hover:shadow-[var(--ui-shadow-lg)]";
-    return item.url ? (
-        <a href={item.url} target="_blank" rel="noreferrer" className={cls}>{body}</a>
-    ) : (
-        <div className={cls}>{body}</div>
+}
+
+function ContactBand({ onQuote }: { onQuote: () => void }) {
+    return (
+        <section id="contato" className="scroll-mt-16 px-4 pb-20 sm:px-6">
+            <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-nav px-6 py-14 text-white sm:px-14 sm:py-16">
+                <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgb(255_255_255/0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
+                <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#4b6bdc]/25 blur-[100px]" />
+                <div className="relative grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
+                    <div>
+                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Vamos tirar seu projeto do papel?</h2>
+                        <p className="mt-3 max-w-xl text-white/65">Conte o que você precisa e receba uma proposta sem compromisso. Respondemos rapidinho pelo WhatsApp.</p>
+                        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                            <button onClick={onQuote} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-[#0f172a] hover:bg-white/90">
+                                <MessageCircle size={18} /> Fazer orçamento
+                            </button>
+                            <a href={mailtoLink("Orçamento — KT Sistemas", "Olá! Gostaria de um orçamento para um projeto.")} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 font-semibold text-white hover:bg-white/10">
+                                <Mail size={18} /> Enviar e-mail
+                            </a>
+                        </div>
+                    </div>
+                    <div className="space-y-3.5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm">
+                        <p className="flex items-center gap-3"><MessageCircle size={17} className="shrink-0 text-white/50" /> {COMPANY.whatsappDisplay}</p>
+                        <p className="flex items-center gap-3 break-all"><Mail size={17} className="shrink-0 text-white/50" /> {COMPANY.email}</p>
+                        <p className="flex items-center gap-3"><LifeBuoy size={17} className="shrink-0 text-white/50" /> Suporte depois da entrega</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     );
 }
