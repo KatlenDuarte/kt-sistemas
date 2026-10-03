@@ -3,8 +3,8 @@
 export const COMPANY = {
     name: "KT Sistemas",
     tagline: "Gestão completa para lojas de celular e assistência técnica",
-    whatsapp: "5531975413394", // com DDI 55
-    whatsappDisplay: "(31) 97541-3394",
+    whatsapp: "5531983892948", // com DDI 55
+    whatsappDisplay: "(31) 98389-2948",
     email: "katlenduarte.dev@gmail.com",
 };
 
