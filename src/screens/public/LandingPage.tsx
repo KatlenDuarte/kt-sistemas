@@ -754,7 +754,7 @@ function CustomPlanCard({ onQuote }: { onQuote: () => void }) {
                         <p className="mt-3 text-ink/55">{CUSTOM_PLAN.description}</p>
                         <p className="mt-7 flex flex-wrap items-baseline gap-x-1.5">
                             <span className="w-full text-[12px] text-ink/40">a partir de</span>
-                            <span className="text-[40px] font-semibold tracking-[-0.03em] tabular">{formatBRL(CUSTOM_PLAN.price)}</span>
+                            <span className="text-[40px] font-semibold tracking-[-0.03em] text-[#fff] tabular">{formatBRL(CUSTOM_PLAN.price)}</span>
                         </p>
                         <PrimaryButton onClick={onQuote} className="mt-6">Fazer orçamento <ArrowRight size={16} /></PrimaryButton>
                     </div>
