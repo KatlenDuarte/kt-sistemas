@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+/*
+ * DESIGN SYSTEM · KT SISTEMAS
+ * Tokens semânticos para os temas claro e escuro. A cor primária pode ser
+ * trocada por loja (white label): basta definir --ui-primary no <html>; as
+ * variações (hover, fundo suave, texto) são derivadas automaticamente.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@theme inline {
+  --color-bg: var(--ui-bg);
+  --color-nav: var(--ui-nav);
+  --color-surface: var(--ui-surface);
+  --color-subtle: var(--ui-subtle);
+  --color-hover: var(--ui-hover);
+  --color-line: var(--ui-line);
+  --color-line-strong: var(--ui-line-strong);
+  --color-fg: var(--ui-fg);
+  --color-fg-muted: var(--ui-fg-muted);
+  --color-fg-subtle: var(--ui-fg-subtle);
+  --color-fg-faint: var(--ui-fg-faint);
+  --color-primary: var(--ui-primary);
+  --color-primary-hover: var(--ui-primary-hover);
+  --color-primary-soft: var(--ui-primary-soft);
+  --color-primary-text: var(--ui-primary-text);
+  --color-success: var(--ui-success);
+  --color-success-soft: var(--ui-success-soft);
+  --color-warning: var(--ui-warning);
+  --color-warning-soft: var(--ui-warning-soft);
+  --color-danger: var(--ui-danger);
+  --color-danger-soft: var(--ui-danger-soft);
+  --color-info: var(--ui-info);
+  --color-info-soft: var(--ui-info-soft);
+  --color-chart-1: var(--ui-chart-1);
+  --color-chart-2: var(--ui-chart-2);
+  --color-chart-3: var(--ui-chart-3);
+  --color-chart-4: var(--ui-chart-4);
+  --color-chart-5: var(--ui-chart-5);
+}
+
+:root {
+  /* Azul índigo sóbrio: cor padrão do sistema. Cada loja pode trocar a sua. */
+  --ui-primary: #3e63dd;
+}
+
+:root:not(.dark) {
+  color-scheme: light;
+  --ui-bg: #f5f6f8;
+  --ui-surface: #ffffff;
+  --ui-subtle: #f9fafb;
+  --ui-hover: #f2f4f7;
+  --ui-line: #e6e8ec;
+  --ui-line-strong: #d0d5dd;
+  --ui-fg: #101828;
+  --ui-fg-muted: #344054;
+  --ui-fg-subtle: #667085;
+  --ui-fg-faint: #98a2b3;
+  --ui-nav: #0f172a;
+  --ui-primary-hover: color-mix(in oklab, var(--ui-primary) 88%, black);
+  --ui-primary-soft: color-mix(in oklab, var(--ui-primary) 8%, white);
+  --ui-primary-text: color-mix(in oklab, var(--ui-primary) 80%, black);
+  --ui-success: #067647;
+  --ui-success-soft: #ecfdf3;
+  --ui-warning: #b54708;
+  --ui-warning-soft: #fffaeb;
+  --ui-danger: #c0362c;
+  --ui-danger-soft: #fef3f2;
+  --ui-info: #0e7090;
+  --ui-info-soft: #f0f9ff;
+  /* Paleta de gráficos: tons médios, distintos entre si e calmos */
+  --ui-chart-1: #4c6fd8;
+  --ui-chart-2: #2a9d8f;
+  --ui-chart-3: #d4a24c;
+  --ui-chart-4: #d9707f;
+  --ui-chart-5: #8b7fc7;
+  --ui-shadow: 0 1px 2px rgb(16 24 40 / 0.05);
+  --ui-shadow-md: 0 1px 2px rgb(16 24 40 / 0.04), 0 4px 12px -2px rgb(16 24 40 / 0.08);
+  --ui-shadow-lg: 0 24px 48px -12px rgb(16 24 40 / 0.18);
+}
+
+:root.dark {
+  color-scheme: dark;
+  --ui-bg: #0b0f17;
+  --ui-surface: #111723;
+  --ui-subtle: #141b28;
+  --ui-hover: #19212f;
+  --ui-line: #222a38;
+  --ui-line-strong: #323c4e;
+  --ui-fg: #f2f4f7;
+  --ui-fg-muted: #c4cad4;
+  --ui-fg-subtle: #8c95a5;
+  --ui-fg-faint: #5f6878;
+  --ui-nav: #0d121c;
+  --ui-primary-hover: color-mix(in oklab, var(--ui-primary) 85%, white);
+  --ui-primary-soft: color-mix(in oklab, var(--ui-primary) 14%, transparent);
+  --ui-primary-text: color-mix(in oklab, var(--ui-primary) 62%, white);
+  --ui-success: #47cd89;
+  --ui-success-soft: rgb(71 205 137 / 0.1);
+  --ui-warning: #f5b546;
+  --ui-warning-soft: rgb(245 181 70 / 0.1);
+  --ui-danger: #f17c72;
+  --ui-danger-soft: rgb(241 124 114 / 0.1);
+  --ui-info: #5cc0e6;
+  --ui-info-soft: rgb(92 192 230 / 0.1);
+  --ui-chart-1: #6f8ce6;
+  --ui-chart-2: #3fb5a6;
+  --ui-chart-3: #e0b562;
+  --ui-chart-4: #e58796;
+  --ui-chart-5: #a397dc;
+  --ui-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --ui-shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 20px -6px rgb(0 0 0 / 0.45);
+  --ui-shadow-lg: 0 24px 56px -16px rgb(0 0 0 / 0.7);
+}
+
+html,
+body {
+  background-color: var(--ui-bg);
+  color: var(--ui-fg-muted);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 200ms ease, border-color 200ms ease, color 150ms ease !important;
+}
+
+@layer components {
+  .ui-input {
+    @apply w-full h-10 rounded-xl border border-line bg-surface px-3 text-sm text-fg placeholder:text-fg-faint outline-none transition focus:border-primary focus:ring-[3px] focus:ring-primary/12 disabled:opacity-60;
+  }
+  textarea.ui-input { @apply h-auto py-2.5 resize-y; }
+  select.ui-input { @apply pr-8 cursor-pointer; }
+  .ui-label { @apply block text-xs font-medium text-fg-muted mb-1.5; }
+
+  .ui-table { @apply w-full text-sm border-collapse; }
+  .ui-table thead th {
+    @apply h-10 px-4 text-left text-xs font-medium text-fg-subtle bg-subtle border-b border-line whitespace-nowrap;
+  }
+  .ui-table tbody td { @apply px-4 py-3 border-b border-line text-fg-muted align-middle; }
+  .ui-table tbody tr:last-child td { @apply border-b-0; }
+  .ui-table tbody tr:hover td { @apply bg-hover/60; }
+
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  .animate-sheet { animation: sheet-in 220ms cubic-bezier(.2,.8,.2,1); }
+  .animate-pop { animation: pop-in 160ms ease-out; }
+}
+
+@keyframes sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes pop-in { from { opacity: 0; transform: scale(.97) translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* 16px nos campos do celular evita o zoom automático do iOS */
+@media (max-width: 640px) {
+  .ui-input:not(.text-lg):not(.text-xl):not(.text-2xl) { font-size: 16px; }
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--ui-line-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--ui-line-strong); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+::selection { background: color-mix(in oklab, var(--ui-primary) 20%, transparent); }
+input[type="date"], input[type="month"] { color-scheme: inherit; }
+
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; inset: 0 auto auto 0; width: 80mm; }
+}
