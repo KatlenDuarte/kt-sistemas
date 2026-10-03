@@ -1,16 +1,15 @@
-// src/screens/public/LandingPage.tsx — site da KT Sistemas (desenvolvimento de sites, sistemas e aplicativos)
+// src/screens/public/LandingPage.tsx — site da KT Sistemas (design premium, escuro)
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
     Globe, LayoutTemplate, ShoppingBag, Smartphone, LayoutDashboard, CalendarClock, UtensilsCrossed, Bot,
-    CreditCard, BedDouble, Wrench, Check, MessageCircle, Mail, ChevronDown, Menu, X, Sun, Moon, ArrowRight,
-    Cloud, Headphones, Palette, Rocket, ClipboardList, Code2, LifeBuoy, Sparkles, ChevronLeft, ChevronRight,
-    Send, type LucideIcon,
+    CreditCard, BedDouble, Wrench, Check, MessageCircle, Mail, Plus, Menu, X, ArrowRight, ArrowUpRight,
+    Cloud, Headphones, Palette, Rocket, ClipboardList, Code2, Sparkles, ChevronLeft, ChevronRight, Send,
+    type LucideIcon,
 } from "lucide-react";
 import { COMPANY, CUSTOM_PLAN, PLANS, PLAN_FEATURES, PORTFOLIO, SEGMENTS, whatsappLink, mailtoLink, type PortfolioItem } from "../../config/brand";
 import { formatBRL } from "../../lib/format";
 import { navigate } from "../../lib/router";
-import { useTheme } from "../../contexts/ThemeContext";
 
 /** Marca da KT Sistemas (cor fixa, não muda com o white label das lojas). */
 export function KtLogo({ light = false, className = "" }: { light?: boolean; className?: string }) {
@@ -59,16 +58,82 @@ const FAQ = [
     { q: "E depois da entrega?", a: "Seguimos com suporte pelo WhatsApp e fazemos melhorias e novas funções sempre que você precisar." },
 ];
 
-const TRUST: [LucideIcon, string, string][] = [
-    [Sparkles, "Sob medida", "Feito para o seu negócio"],
-    [Smartphone, "Mobile first", "Perfeito no celular"],
-    [Cloud, "No ar com você", "Domínio e hospedagem"],
-    [Headphones, "Suporte humano", "Direto pelo WhatsApp"],
+const VALUES: [LucideIcon, string, string][] = [
+    [Sparkles, "100% sob medida", "Cada projeto pensado para o seu negócio"],
+    [Smartphone, "Mobile first", "Perfeito no celular, ótimo no computador"],
+    [Cloud, "No ar com você", "Domínio, hospedagem e segurança"],
+    [Headphones, "Suporte humano", "Gente de verdade, direto no WhatsApp"],
 ];
+
+/* ------------------------------------------------------------------ Base visual */
+
+const BG = "bg-[#05070d]";
+
+/** Fundo com brilhos sutis no azul da marca. */
+function Glow({ className = "" }: { className?: string }) {
+    return <div className={`pointer-events-none absolute rounded-full blur-[120px] ${className}`} />;
+}
+
+/** Aparece suavemente quando entra na tela. */
+function Reveal({ children, delay = 0, className = "", immediate = false }: { children: ReactNode; delay?: number; className?: string; immediate?: boolean }) {
+    const ref = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        // Conteúdo da primeira tela: anima logo ao abrir, sem esperar a rolagem
+        if (immediate) {
+            const id = requestAnimationFrame(() => el.classList.add("is-visible"));
+            return () => cancelAnimationFrame(id);
+        }
+        const io = new IntersectionObserver(([e]) => {
+            if (e.isIntersecting) {
+                el.classList.add("is-visible");
+                io.disconnect();
+            }
+        }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+        io.observe(el);
+        return () => io.disconnect();
+    }, [immediate]);
+    return <div ref={ref} className={`kt-reveal ${className}`} style={{ transitionDelay: `${delay}ms` }}>{children}</div>;
+}
+
+function Eyebrow({ children }: { children: ReactNode }) {
+    return (
+        <span className="inline-flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.22em] text-[#9fb0ff]">
+            <span className="h-px w-6 bg-gradient-to-r from-transparent to-[#9fb0ff]" />{children}
+        </span>
+    );
+}
+
+function SectionTitle({ eyebrow, title, text, center }: { eyebrow: string; title: ReactNode; text?: string; center?: boolean }) {
+    return (
+        <Reveal className={center ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
+            <Eyebrow>{eyebrow}</Eyebrow>
+            <h2 className="mt-4 text-[34px] font-semibold leading-[1.08] tracking-[-0.03em] text-white sm:text-[48px]">{title}</h2>
+            {text && <p className={`mt-4 text-[17px] leading-relaxed text-white/55 ${center ? "mx-auto max-w-2xl" : "max-w-2xl"}`}>{text}</p>}
+        </Reveal>
+    );
+}
+
+function PrimaryButton({ children, onClick, className = "" }: { children: ReactNode; onClick?: () => void; className?: string }) {
+    return (
+        <button onClick={onClick} className={`group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-b from-[#6f86ff] to-[#3f5bd6] px-7 text-[15px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(91,118,255,.8),inset_0_1px_0_rgba(255,255,255,.25)] transition hover:brightness-110 ${className}`}>
+            {children}
+        </button>
+    );
+}
+
+function GhostLink({ href, children, className = "" }: { href: string; children: ReactNode; className?: string }) {
+    return (
+        <a href={href} className={`inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.03] px-7 text-[15px] font-medium text-white/90 backdrop-blur transition hover:border-white/25 hover:bg-white/[0.07] ${className}`}>
+            {children}
+        </a>
+    );
+}
 
 /* ------------------------------------------------------------------ Orçamento */
 
-const PROJECT_TYPES = [...SERVICES.map(s => s.title), "Sistema pronto (plano mensal/anual/vitalício)", "Outro"];
+const PROJECT_TYPES = [...SERVICES.map(s => s.title), "Sistema pronto (plano mensal/anual/vitalício)", "Sistema sob medida", "Outro"];
 
 /** Abre o formulário de orçamento, que monta a mensagem e envia pelo WhatsApp. */
 function useQuote() {
@@ -77,14 +142,40 @@ function useQuote() {
     return { openQuote: (type?: string) => setOpen({ type }), quoteModal: modal };
 }
 
+/** Fecha com Esc e trava a rolagem da página enquanto a janela está aberta. */
+function useModalBehavior(onClose: () => void) {
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+        window.addEventListener("keydown", onKey);
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+    }, [onClose]);
+}
+
+function Modal({ children, onClose, label, wide }: { children: ReactNode; onClose: () => void; label: string; wide?: boolean }) {
+    useModalBehavior(onClose);
+    return (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#02040a]/75 backdrop-blur-md sm:items-center sm:p-6" onClick={onClose}>
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={label}
+                onClick={e => e.stopPropagation()}
+                className={`relative flex max-h-[94svh] w-full flex-col overflow-hidden rounded-t-[28px] border border-white/10 bg-[#0b0f1a]/95 text-white shadow-[0_40px_120px_-20px_rgba(0,0,0,.8)] sm:rounded-[28px] ${wide ? "max-w-4xl" : "max-w-lg"}`}
+            >
+                {children}
+            </div>
+        </div>
+    );
+}
+
 function QuoteModal({ initialType, onClose }: { initialType?: string; onClose: () => void }) {
     const [name, setName] = useState("");
     const [business, setBusiness] = useState("");
     const [type, setType] = useState(initialType || PROJECT_TYPES[0]);
     const [idea, setIdea] = useState("");
     const [deadline, setDeadline] = useState("");
-
-    useModalBehavior(onClose);
 
     const message = [
         "Olá! Quero fazer um orçamento com a *KT Sistemas* 🚀",
@@ -99,105 +190,98 @@ function QuoteModal({ initialType, onClose }: { initialType?: string; onClose: (
     const ready = name.trim().length > 1;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-6" onClick={onClose}>
-            <div role="dialog" aria-modal="true" aria-label="Fazer orçamento" onClick={e => e.stopPropagation()} className="flex max-h-[92svh] w-full max-w-lg flex-col rounded-t-3xl border border-line bg-surface shadow-[var(--ui-shadow-lg)] sm:rounded-3xl">
-                <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
-                    <div>
-                        <h2 className="text-xl font-bold tracking-tight text-fg">Fazer orçamento</h2>
-                        <p className="mt-1 text-sm text-fg-subtle">Conte sua ideia. A mensagem vai pronta para o nosso WhatsApp.</p>
-                    </div>
-                    <button onClick={onClose} aria-label="Fechar" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-xl text-fg-subtle hover:bg-hover"><X size={18} /></button>
+        <Modal onClose={onClose} label="Fazer orçamento">
+            <Glow className="-right-24 -top-24 h-64 w-64 bg-[#4b6bdc]/30" />
+            <div className="relative flex items-start justify-between gap-4 border-b border-white/[0.07] px-6 py-5">
+                <div>
+                    <h2 className="text-xl font-semibold tracking-tight">Fazer <span className="kt-serif text-[26px] italic text-[#c7d2ff]">orçamento</span></h2>
+                    <p className="mt-1 text-sm text-white/50">Conte sua ideia. A mensagem vai pronta para o nosso WhatsApp.</p>
                 </div>
-                <div className="space-y-4 overflow-y-auto px-6 py-5">
-                    <Field label="Seu nome *"><input value={name} onChange={e => setName(e.target.value)} className="ui-input" placeholder="Como podemos te chamar?" autoFocus /></Field>
-                    <Field label="Empresa ou negócio"><input value={business} onChange={e => setBusiness(e.target.value)} className="ui-input" placeholder="Ex.: Barbearia do João" /></Field>
-                    <Field label="O que você precisa?">
-                        <select value={type} onChange={e => setType(e.target.value)} className="ui-input">
-                            {PROJECT_TYPES.map(t => <option key={t}>{t}</option>)}
-                        </select>
-                    </Field>
-                    <Field label="Conte um pouco da ideia"><textarea value={idea} onChange={e => setIdea(e.target.value)} rows={4} className="ui-input resize-none" placeholder="O que o site/sistema/app precisa fazer? Tem alguma referência?" /></Field>
-                    <Field label="Prazo desejado">
-                        <select value={deadline} onChange={e => setDeadline(e.target.value)} className="ui-input">
-                            <option value="">Sem pressa / a combinar</option>
-                            <option>O quanto antes</option>
-                            <option>Até 15 dias</option>
-                            <option>Até 1 mês</option>
-                            <option>Até 3 meses</option>
-                        </select>
-                    </Field>
-                </div>
-                <div className="border-t border-line px-6 py-4">
-                    <a
-                        href={ready ? whatsappLink(message) : undefined}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-disabled={!ready}
-                        onClick={e => { if (!ready) e.preventDefault(); else onClose(); }}
-                        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-semibold text-white transition ${ready ? "bg-[#25d366] hover:brightness-95" : "cursor-not-allowed bg-[#25d366]/40"}`}
-                    >
-                        <Send size={17} /> Enviar pelo WhatsApp
-                    </a>
-                    <p className="mt-2 text-center text-xs text-fg-faint">{ready ? "Abre o WhatsApp com a mensagem pronta para enviar." : "Preencha seu nome para continuar."}</p>
-                </div>
+                <button onClick={onClose} aria-label="Fechar" className="-mr-2 flex h-9 w-9 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"><X size={18} /></button>
             </div>
-        </div>
+            <div className="relative space-y-4 overflow-y-auto px-6 py-5">
+                <Field label="Seu nome *"><input value={name} onChange={e => setName(e.target.value)} className="kt-input" placeholder="Como podemos te chamar?" autoFocus /></Field>
+                <Field label="Empresa ou negócio"><input value={business} onChange={e => setBusiness(e.target.value)} className="kt-input" placeholder="Ex.: Barbearia do João" /></Field>
+                <Field label="O que você precisa?">
+                    <select value={type} onChange={e => setType(e.target.value)} className="kt-input">
+                        {PROJECT_TYPES.map(t => <option key={t}>{t}</option>)}
+                    </select>
+                </Field>
+                <Field label="Conte um pouco da ideia"><textarea value={idea} onChange={e => setIdea(e.target.value)} rows={4} className="kt-input resize-none" placeholder="O que o site/sistema/app precisa fazer? Tem alguma referência?" /></Field>
+                <Field label="Prazo desejado">
+                    <select value={deadline} onChange={e => setDeadline(e.target.value)} className="kt-input">
+                        <option value="">Sem pressa / a combinar</option>
+                        <option>O quanto antes</option>
+                        <option>Até 15 dias</option>
+                        <option>Até 1 mês</option>
+                        <option>Até 3 meses</option>
+                    </select>
+                </Field>
+            </div>
+            <div className="relative border-t border-white/[0.07] px-6 py-4">
+                <a
+                    href={ready ? whatsappLink(message) : undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-disabled={!ready}
+                    onClick={e => { if (!ready) e.preventDefault(); else onClose(); }}
+                    className={`flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition ${ready ? "bg-gradient-to-b from-[#2fe07a] to-[#1fb862] shadow-[0_10px_30px_-12px_rgba(37,211,102,.8)] hover:brightness-105" : "cursor-not-allowed bg-white/10 text-white/40"}`}
+                >
+                    <Send size={17} /> Enviar pelo WhatsApp
+                </a>
+                <p className="mt-2 text-center text-xs text-white/35">{ready ? "Abre o WhatsApp com a mensagem pronta para enviar." : "Preencha seu nome para continuar."}</p>
+            </div>
+        </Modal>
     );
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
     return (
         <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-fg">{label}</span>
+            <span className="mb-1.5 block text-[13px] font-medium text-white/70">{label}</span>
             {children}
         </label>
     );
 }
 
-/** Fecha com Esc e trava a rolagem da página enquanto a janela está aberta. */
-function useModalBehavior(onClose: () => void) {
-    useEffect(() => {
-        const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-        window.addEventListener("keydown", onKey);
-        const prev = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
-        return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
-    }, [onClose]);
-}
+/* ------------------------------------------------------------------ Cabeçalho e rodapé */
 
-/* ------------------------------------------------------------------ Estrutura comum */
+const NAV: [string, string][] = [["servicos", "Serviços"], ["projetos", "Projetos"], ["planos", "Planos"], ["processo", "Processo"], ["duvidas", "Dúvidas"]];
 
-const NAV: [string, string][] = [["servicos", "Serviços"], ["projetos", "Projetos"], ["planos", "Planos"], ["como-trabalhamos", "Como trabalhamos"], ["duvidas", "Dúvidas"], ["contato", "Contato"]];
+const goTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    else { navigate("/"); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 140); }
+};
 
 function Header({ onQuote }: { onQuote: () => void }) {
-    const { theme, toggleTheme } = useTheme();
     const [menu, setMenu] = useState(false);
-    const go = (id: string) => {
-        setMenu(false);
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-        else { navigate("/"); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 120); }
-    };
+    const [scrolled, setScrolled] = useState(false);
+    useEffect(() => {
+        const on = () => setScrolled(window.scrollY > 24);
+        on();
+        window.addEventListener("scroll", on, { passive: true });
+        return () => window.removeEventListener("scroll", on);
+    }, []);
     return (
-        <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-md">
-            <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-                <a href="#/" aria-label={COMPANY.name}><KtLogo /></a>
-                <nav className="ml-4 hidden items-center gap-0.5 text-sm lg:flex">
-                    {NAV.map(([id, l]) => <button key={id} onClick={() => go(id)} className="rounded-lg px-3 py-1.5 text-fg-subtle hover:bg-hover hover:text-fg">{l}</button>)}
+        <header className="fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-5 sm:pt-4">
+            <div className={`mx-auto flex h-14 max-w-6xl items-center gap-3 rounded-full border px-3 pl-4 transition-all duration-500 sm:h-16 sm:px-4 sm:pl-5 ${scrolled || menu ? "border-white/10 bg-[#0a0e19]/80 shadow-[0_20px_50px_-20px_rgba(0,0,0,.7)] backdrop-blur-xl" : "border-transparent bg-transparent"}`}>
+                <a href="#/" aria-label={COMPANY.name}><KtLogo light /></a>
+                <nav className="ml-6 hidden items-center gap-1 text-[14px] lg:flex">
+                    {NAV.map(([id, l]) => <button key={id} onClick={() => goTo(id)} className="rounded-full px-3.5 py-2 text-white/60 transition hover:bg-white/[0.06] hover:text-white">{l}</button>)}
                 </nav>
                 <span className="flex-1" />
-                <button onClick={toggleTheme} aria-label="Alternar tema" className="flex h-9 w-9 items-center justify-center rounded-xl text-fg-subtle hover:bg-hover">{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</button>
-                <button onClick={onQuote} className="hidden h-9 items-center gap-2 rounded-xl bg-fg px-4 text-sm font-semibold text-bg hover:opacity-90 sm:inline-flex">
-                    Fazer orçamento
+                <button onClick={onQuote} className="hidden h-10 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#0a0e19] transition hover:bg-white/90 sm:inline-flex">
+                    Fazer orçamento <ArrowUpRight size={15} />
                 </button>
-                <button onClick={() => setMenu(!menu)} aria-label="Menu" className="flex h-9 w-9 items-center justify-center rounded-xl text-fg lg:hidden">{menu ? <X size={20} /> : <Menu size={20} />}</button>
+                <button onClick={() => setMenu(!menu)} aria-label="Menu" className="flex h-10 w-10 items-center justify-center rounded-full text-white hover:bg-white/10 lg:hidden">{menu ? <X size={20} /> : <Menu size={20} />}</button>
             </div>
             {menu && (
-                <div className="space-y-1 border-t border-line px-4 py-3 lg:hidden">
+                <div className="mx-auto mt-2 max-w-6xl space-y-1 rounded-3xl border border-white/10 bg-[#0a0e19]/95 p-3 backdrop-blur-xl lg:hidden">
                     {NAV.map(([id, l]) => (
-                        <button key={id} onClick={() => go(id)} className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium text-fg hover:bg-hover">{l}</button>
+                        <button key={id} onClick={() => { setMenu(false); goTo(id); }} className="block w-full rounded-2xl px-4 py-3 text-left text-[15px] font-medium text-white/85 hover:bg-white/[0.06]">{l}</button>
                     ))}
-                    <button onClick={() => { setMenu(false); onQuote(); }} className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white"><MessageCircle size={16} /> Fazer orçamento</button>
+                    <button onClick={() => { setMenu(false); onQuote(); }} className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-semibold text-[#0a0e19]">Fazer orçamento <ArrowUpRight size={15} /></button>
                 </div>
             )}
         </header>
@@ -205,37 +289,32 @@ function Header({ onQuote }: { onQuote: () => void }) {
 }
 
 function Footer({ onQuote }: { onQuote: () => void }) {
-    const go = (id: string) => {
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-        else { navigate("/"); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 120); }
-    };
     return (
-        <footer className="border-t border-line bg-surface">
-            <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
+        <footer className="relative border-t border-white/[0.06]">
+            <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:px-6 md:grid-cols-[1.6fr_1fr_1fr]">
                 <div>
-                    <KtLogo />
-                    <p className="mt-3 max-w-xs text-sm text-fg-subtle">{COMPANY.tagline}.</p>
+                    <KtLogo light />
+                    <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/45">{COMPANY.tagline}.</p>
                 </div>
                 <div>
-                    <p className="text-sm font-semibold text-fg">Navegação</p>
-                    <ul className="mt-3 space-y-2 text-sm text-fg-subtle">
-                        <li><button onClick={() => go("servicos")} className="hover:text-fg">Serviços</button></li>
-                        <li><a href="#/projetos" className="hover:text-fg">Projetos</a></li>
-                        <li><button onClick={() => go("planos")} className="hover:text-fg">Planos</button></li>
-                        <li><button onClick={onQuote} className="hover:text-fg">Fazer orçamento</button></li>
+                    <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-white/40">Navegação</p>
+                    <ul className="mt-4 space-y-2.5 text-sm text-white/60">
+                        <li><button onClick={() => goTo("servicos")} className="hover:text-white">Serviços</button></li>
+                        <li><a href="#/projetos" className="hover:text-white">Projetos</a></li>
+                        <li><button onClick={() => goTo("planos")} className="hover:text-white">Planos</button></li>
+                        <li><button onClick={onQuote} className="hover:text-white">Fazer orçamento</button></li>
                     </ul>
                 </div>
                 <div>
-                    <p className="text-sm font-semibold text-fg">Contato</p>
-                    <ul className="mt-3 space-y-2 text-sm text-fg-subtle">
-                        <li><a href={whatsappLink("Olá! Vim pelo site da KT Sistemas.")} target="_blank" rel="noreferrer" className="hover:text-fg">{COMPANY.whatsappDisplay}</a></li>
-                        <li><a href={`mailto:${COMPANY.email}`} className="break-all hover:text-fg">{COMPANY.email}</a></li>
+                    <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-white/40">Contato</p>
+                    <ul className="mt-4 space-y-2.5 text-sm text-white/60">
+                        <li><a href={whatsappLink("Olá! Vim pelo site da KT Sistemas.")} target="_blank" rel="noreferrer" className="hover:text-white">{COMPANY.whatsappDisplay}</a></li>
+                        <li><a href={`mailto:${COMPANY.email}`} className="break-all hover:text-white">{COMPANY.email}</a></li>
                     </ul>
                 </div>
             </div>
-            <div className="border-t border-line">
-                <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-fg-faint sm:px-6">© {new Date().getFullYear()} {COMPANY.name}. Todos os direitos reservados.</p>
+            <div className="border-t border-white/[0.06]">
+                <p className="mx-auto max-w-6xl px-5 py-6 text-xs text-white/30 sm:px-6">© {new Date().getFullYear()} {COMPANY.name}. Todos os direitos reservados.</p>
             </div>
         </footer>
     );
@@ -251,120 +330,162 @@ export default function LandingPage() {
     const [project, setProject] = useState<PortfolioItem | null>(null);
 
     return (
-        <div className="min-h-screen bg-bg font-sans text-fg-muted">
+        <div className={`min-h-screen overflow-x-clip ${BG} font-sans text-white antialiased selection:bg-[#6f86ff]/40`}>
             <Header onQuote={() => openQuote()} />
 
-            {/* Hero */}
-            <section className="relative overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 opacity-60 [background-image:radial-gradient(var(--ui-line-strong)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]" />
-                <div className="pointer-events-none absolute -top-48 left-1/2 h-[480px] w-[880px] -translate-x-1/2 rounded-full bg-primary/[0.07] blur-[110px]" />
-                <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20">
-                    <div>
-                        <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-fg-muted shadow-[var(--ui-shadow)]">
-                            <span className="h-1.5 w-1.5 rounded-full bg-success" /> Sites · E-commerce · Aplicativos · Sistemas
+            {/* ---------------- Hero ---------------- */}
+            <section className="relative overflow-hidden pb-10 pt-28 sm:pt-36">
+                <div className="pointer-events-none absolute inset-0 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_70%_55%_at_50%_0%,black,transparent)]" />
+                <Glow className="left-1/2 top-[-260px] h-[620px] w-[1000px] -translate-x-1/2 bg-[#3f5bd6]/35" />
+                <Glow className="right-[-200px] top-[200px] h-[420px] w-[420px] bg-[#8b5cf6]/15" />
+
+                <div className="relative mx-auto max-w-6xl px-5 text-center sm:px-6">
+                    <Reveal immediate>
+                        <span className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2 pr-4 text-[13px] text-white/70 backdrop-blur">
+                            <span className="relative flex h-5 items-center rounded-full bg-[#6f86ff]/20 px-2 text-[11px] font-semibold text-[#c7d2ff]">
+                                <span className="mr-1.5 h-1.5 w-1.5 animate-pulse rounded-full bg-[#7dd3a8]" />Novo
+                            </span>
+                            <span className="sm:hidden">Sites · Lojas · Apps · Sistemas</span>
+                            <span className="hidden sm:inline">Sites · E-commerce · Aplicativos · Sistemas</span>
                         </span>
-                        <h1 className="mt-6 text-[38px] font-bold leading-[1.07] tracking-[-0.025em] text-fg sm:text-[52px]">
-                            Sua ideia no ar, <span className="text-fg-subtle">do jeito que o seu negócio precisa.</span>
+                    </Reveal>
+                    <Reveal immediate delay={80}>
+                        <h1 className="mx-auto mt-7 max-w-4xl text-[44px] font-semibold leading-[1.02] tracking-[-0.045em] text-white sm:text-[76px]">
+                            Transformamos ideias em <span className="kt-serif kt-gradient-text pr-1 text-[1.12em] italic">experiências digitais</span> que vendem.
                         </h1>
-                        <p className="mt-6 max-w-xl text-lg leading-relaxed text-fg-subtle">
+                    </Reveal>
+                    <Reveal immediate delay={160}>
+                        <p className="mx-auto mt-7 max-w-2xl text-[17px] leading-relaxed text-white/55 sm:text-lg">
                             Criamos sites, lojas virtuais, aplicativos e sistemas sob medida — bonitos, rápidos, perfeitos no celular e fáceis de usar.
                         </p>
-                        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                            <button onClick={() => openQuote()} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-[15px] font-semibold text-white shadow-[var(--ui-shadow-md)] hover:bg-primary-hover">
-                                <MessageCircle size={18} /> Fazer orçamento
-                            </button>
-                            <a href="#/projetos" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-6 text-[15px] font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">
-                                Ver projetos <ArrowRight size={16} />
-                            </a>
+                    </Reveal>
+                    <Reveal immediate delay={240}>
+                        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                            <PrimaryButton onClick={() => openQuote()} className="w-full sm:w-auto">
+                                Fazer orçamento <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+                            </PrimaryButton>
+                            <GhostLink href="#/projetos" className="w-full sm:w-auto">Ver projetos</GhostLink>
                         </div>
-                        <ul className="mt-8 grid max-w-lg grid-cols-2 gap-x-6 gap-y-2.5 text-sm text-fg-subtle">
-                            {["Orçamento sem compromisso", "Projeto sob medida", "Painel para você editar", `Planos a partir de ${formatBRL(PLANS[0].price)}/mês`].map(t => (
-                                <li key={t} className="flex items-center gap-2"><Check size={15} className="shrink-0 text-success" />{t}</li>
-                            ))}
-                        </ul>
-                    </div>
-                    <HeroShowcase />
+                        <p className="mt-6 text-[13px] text-white/40">Orçamento sem compromisso · Planos a partir de {formatBRL(PLANS[0].price)}/mês</p>
+                    </Reveal>
+
+                    {/* Vitrine em perspectiva */}
+                    <Reveal immediate delay={320} className="relative mx-auto mt-14 max-w-5xl sm:mt-16">
+                        <Showcase />
+                    </Reveal>
                 </div>
             </section>
 
-            {/* Faixa de confiança */}
-            <section className="border-y border-line bg-surface">
-                <div className="mx-auto grid max-w-6xl grid-cols-2 divide-line px-4 sm:px-6 md:grid-cols-4 md:divide-x">
-                    {TRUST.map(([Icon, t, d]) => (
-                        <div key={t} className="flex items-center gap-3 px-2 py-5 md:px-6">
-                            <Icon size={20} className="shrink-0 text-fg-faint" />
-                            <div><p className="text-sm font-semibold text-fg">{t}</p><p className="text-xs text-fg-subtle">{d}</p></div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Serviços */}
-            <section id="servicos" className="scroll-mt-16 py-20 sm:py-24">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <SectionTitle eyebrow="Serviços" title="Tudo que o seu negócio precisa na internet" text="Do primeiro site ao sistema completo de gestão — cuidamos de tudo, do layout ao suporte." />
-                    <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-[var(--ui-shadow)] sm:grid-cols-2 lg:grid-cols-4">
-                        {SERVICES.map(f => (
-                            <button key={f.title} onClick={() => openQuote(f.title)} className="group bg-surface p-6 text-left transition-colors hover:bg-subtle">
-                                <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-subtle text-fg-muted group-hover:text-primary"><f.icon size={19} /></span>
-                                <h3 className="mt-4 font-semibold text-fg">{f.title}</h3>
-                                <p className="mt-1.5 text-sm leading-relaxed text-fg-subtle">{f.text}</p>
-                                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary-text opacity-0 transition-opacity group-hover:opacity-100">Pedir orçamento <ArrowRight size={13} /></span>
-                            </button>
+            {/* ---------------- Faixa de segmentos ---------------- */}
+            <section className="relative border-y border-white/[0.06] bg-white/[0.015] py-6">
+                <div className="flex overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
+                    <div className="kt-marquee flex shrink-0 items-center gap-10 pr-10">
+                        {[0, 1].map(k => (
+                            <div key={k} className="flex shrink-0 items-center gap-10" aria-hidden={k === 1}>
+                                {[...SEGMENTS, ...SERVICES.slice(0, 6).map(s => s.title)].map(t => (
+                                    <span key={t + k} className="flex shrink-0 items-center gap-10 whitespace-nowrap text-[15px] text-white/40">
+                                        {t}<span className="h-1 w-1 rounded-full bg-white/20" />
+                                    </span>
+                                ))}
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Projetos */}
-            <section id="projetos" className="scroll-mt-16 border-y border-line bg-surface py-20 sm:py-24">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <div className="flex flex-wrap items-end justify-between gap-6">
-                        <SectionTitle eyebrow="Projetos" title="Sistemas que já estão rodando" text="Alguns dos projetos que desenvolvemos e que estão em uso hoje." />
-                        <a href="#/projetos" className="hidden h-10 items-center gap-2 rounded-xl border border-line bg-bg px-4 text-sm font-semibold text-fg hover:bg-hover sm:inline-flex">Ver mais projetos <ArrowRight size={15} /></a>
-                    </div>
-                    <div className="mt-12 grid gap-6 md:grid-cols-2">
-                        {PORTFOLIO.slice(0, HOME_PROJECTS).map(p => <ProjectCard key={p.id} item={p} onOpen={() => setProject(p)} />)}
-                    </div>
-                    <div className="mt-10 flex justify-center">
-                        <a href="#/projetos" className="inline-flex h-11 items-center gap-2 rounded-xl border border-line bg-bg px-5 text-sm font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">Ver mais projetos <ArrowRight size={15} /></a>
+            {/* ---------------- Valores ---------------- */}
+            <section className="relative py-20 sm:py-24">
+                <div className="mx-auto max-w-6xl px-5 sm:px-6">
+                    <div className="grid gap-px overflow-hidden rounded-3xl border border-white/[0.07] bg-white/[0.07] sm:grid-cols-2 lg:grid-cols-4">
+                        {VALUES.map(([Icon, t, d], i) => (
+                            <Reveal key={t} delay={i * 70} className="bg-[#070a12] p-7">
+                                <Icon size={20} className="text-[#9fb0ff]" />
+                                <p className="mt-5 text-[17px] font-semibold text-white">{t}</p>
+                                <p className="mt-1.5 text-sm leading-relaxed text-white/45">{d}</p>
+                            </Reveal>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Planos */}
-            <section id="planos" className="scroll-mt-16 py-20 sm:py-24">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <SectionTitle center eyebrow="Planos" title="Sistemas prontos para o seu segmento" text="Comece rápido com um sistema pronto, com a sua marca — ou peça um projeto exclusivo." />
-                    <div className="mx-auto mt-6 flex max-w-3xl flex-wrap justify-center gap-2">
-                        {SEGMENTS.map(s => <span key={s} className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-fg-muted">{s}</span>)}
+            {/* ---------------- Serviços ---------------- */}
+            <section id="servicos" className="relative scroll-mt-24 py-16 sm:py-24">
+                <Glow className="left-[-200px] top-40 h-[500px] w-[500px] bg-[#3f5bd6]/15" />
+                <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                    <SectionTitle eyebrow="Serviços" title={<>Tudo que o seu negócio precisa <span className="kt-serif italic text-[#c7d2ff]">na internet</span></>} text="Do primeiro site ao sistema completo de gestão — cuidamos de tudo, do layout ao suporte." />
+                    <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {SERVICES.map((s, i) => (
+                            <Reveal key={s.title} delay={(i % 3) * 70}>
+                                <button
+                                    onClick={() => openQuote(s.title)}
+                                    className="group relative h-full w-full overflow-hidden rounded-3xl border border-white/[0.07] bg-gradient-to-b from-white/[0.045] to-white/[0.01] p-7 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#7c93ff]/35"
+                                >
+                                    <span className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#6f86ff]/0 blur-3xl transition duration-500 group-hover:bg-[#6f86ff]/25" />
+                                    <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] text-[#c7d2ff] shadow-[inset_0_1px_0_rgba(255,255,255,.08)]">
+                                        <s.icon size={21} strokeWidth={1.6} />
+                                    </span>
+                                    <h3 className="relative mt-6 text-[18px] font-semibold tracking-tight text-white">{s.title}</h3>
+                                    <p className="relative mt-2 text-[14.5px] leading-relaxed text-white/50">{s.text}</p>
+                                    <span className="relative mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#9fb0ff] opacity-70 transition group-hover:opacity-100">
+                                        Pedir orçamento <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                                    </span>
+                                </button>
+                            </Reveal>
+                        ))}
                     </div>
+                </div>
+            </section>
+
+            {/* ---------------- Projetos ---------------- */}
+            <section id="projetos" className="relative scroll-mt-24 py-16 sm:py-24">
+                <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                    <div className="flex flex-wrap items-end justify-between gap-6">
+                        <SectionTitle eyebrow="Projetos" title={<>Sistemas que já <span className="kt-serif italic text-[#c7d2ff]">estão rodando</span></>} text="Alguns dos projetos que desenvolvemos e que estão em uso hoje." />
+                        <a href="#/projetos" className="hidden items-center gap-2 text-sm font-medium text-white/70 transition hover:text-white sm:inline-flex">Ver mais projetos <ArrowRight size={15} /></a>
+                    </div>
+                    <div className="mt-14 space-y-6">
+                        {PORTFOLIO.slice(0, HOME_PROJECTS).map((p, i) => <ProjectRow key={p.id} item={p} reverse={i % 2 === 1} onOpen={() => setProject(p)} />)}
+                    </div>
+                    <Reveal className="mt-12 flex justify-center">
+                        <GhostLink href="#/projetos">Ver mais projetos <ArrowRight size={16} /></GhostLink>
+                    </Reveal>
+                </div>
+            </section>
+
+            {/* ---------------- Processo ---------------- */}
+            <section id="processo" className="relative scroll-mt-24 py-16 sm:py-24">
+                <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                    <SectionTitle center eyebrow="Processo" title={<>Do primeiro contato ao <span className="kt-serif italic text-[#c7d2ff]">projeto no ar</span></>} />
+                    <div className="relative mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        <span className="pointer-events-none absolute left-[12%] right-[12%] top-[38px] hidden h-px bg-gradient-to-r from-transparent via-[#7c93ff]/40 to-transparent lg:block" />
+                        {STEPS.map((s, i) => (
+                            <Reveal key={s.title} delay={i * 90} className="relative rounded-3xl border border-white/[0.07] bg-[#080b14] p-7">
+                                <span className="kt-serif block text-[44px] italic leading-none text-[#9fb0ff]/80">0{i + 1}</span>
+                                <h3 className="mt-5 flex items-center gap-2 text-[17px] font-semibold text-white"><s.icon size={17} className="text-white/40" />{s.title}</h3>
+                                <p className="mt-2 text-sm leading-relaxed text-white/50">{s.text}</p>
+                            </Reveal>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ---------------- Planos ---------------- */}
+            <section id="planos" className="relative scroll-mt-24 py-16 sm:py-24">
+                <Glow className="left-1/2 top-24 h-[520px] w-[900px] -translate-x-1/2 bg-[#3f5bd6]/15" />
+                <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                    <SectionTitle center eyebrow="Planos" title={<>Sistemas prontos para o <span className="kt-serif italic text-[#c7d2ff]">seu segmento</span></>} text="Comece rápido com um sistema pronto, com a sua marca — ou peça um projeto exclusivo." />
+                    <Reveal className="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-2">
+                        {SEGMENTS.map(s => <span key={s} className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] text-white/60">{s}</span>)}
+                    </Reveal>
                     <PlanCards />
                     <CustomPlanCard onQuote={() => openQuote("Sistema sob medida")} />
                 </div>
             </section>
 
-            {/* Como trabalhamos */}
-            <section id="como-trabalhamos" className="scroll-mt-16 border-y border-line bg-surface py-20 sm:py-24">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <SectionTitle center eyebrow="Como trabalhamos" title="Do primeiro contato ao projeto no ar" />
-                    <ol className="relative mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-                        <span className="pointer-events-none absolute left-[12%] right-[12%] top-5 hidden h-px bg-line-strong lg:block" />
-                        {STEPS.map((s, i) => (
-                            <li key={s.title} className="relative text-center">
-                                <span className="relative mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-line-strong bg-surface text-sm font-semibold text-fg shadow-[var(--ui-shadow)]">{i + 1}</span>
-                                <h3 className="mt-5 flex items-center justify-center gap-2 font-semibold text-fg"><s.icon size={16} className="text-fg-faint" />{s.title}</h3>
-                                <p className="mx-auto mt-1.5 max-w-xs text-sm text-fg-subtle">{s.text}</p>
-                            </li>
-                        ))}
-                    </ol>
-                </div>
-            </section>
-
-            {/* Dúvidas */}
+            {/* ---------------- Dúvidas ---------------- */}
             <Faq />
 
-            {/* Contato */}
+            {/* ---------------- Chamada final ---------------- */}
             <ContactBand onQuote={() => openQuote()} />
 
             <Footer onQuote={() => openQuote()} />
@@ -380,22 +501,25 @@ export function ProjectsPage() {
     const { openQuote, quoteModal } = useQuote();
     const [project, setProject] = useState<PortfolioItem | null>(null);
     return (
-        <div className="min-h-screen bg-bg font-sans text-fg-muted">
+        <div className={`min-h-screen overflow-x-clip ${BG} font-sans text-white antialiased`}>
             <Header onQuote={() => openQuote()} />
-            <section className="py-16 sm:py-20">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                    <a href="#/" className="inline-flex items-center gap-1.5 text-sm font-medium text-fg-subtle hover:text-fg"><ChevronLeft size={16} /> Voltar ao início</a>
-                    <div className="mt-6">
-                        <SectionTitle eyebrow="Projetos" title="Nosso portfólio" text="Sites, sistemas e aplicativos que desenvolvemos e que estão em uso hoje. Clique para ver os detalhes." />
+            <section className="relative overflow-hidden pb-20 pt-32 sm:pt-40">
+                <Glow className="left-1/2 top-[-260px] h-[560px] w-[900px] -translate-x-1/2 bg-[#3f5bd6]/30" />
+                <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                    <a href="#/" className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white"><ChevronLeft size={16} /> Voltar ao início</a>
+                    <div className="mt-8">
+                        <SectionTitle eyebrow="Portfólio" title={<>Nossos <span className="kt-serif italic text-[#c7d2ff]">projetos</span></>} text="Sites, sistemas e aplicativos que desenvolvemos e que estão em uso hoje. Clique para ver os detalhes." />
                     </div>
-                    <div className="mt-12 grid gap-6 md:grid-cols-2">
-                        {PORTFOLIO.map(p => <ProjectCard key={p.id} item={p} onOpen={() => setProject(p)} />)}
+                    <div className="mt-14 grid gap-6 md:grid-cols-2">
+                        {PORTFOLIO.map((p, i) => (
+                            <Reveal key={p.id} delay={(i % 2) * 90}><ProjectCard item={p} onOpen={() => setProject(p)} /></Reveal>
+                        ))}
                     </div>
-                    <div className="mt-14 rounded-2xl border border-dashed border-line-strong bg-surface p-8 text-center">
-                        <p className="text-lg font-semibold text-fg">Novos projetos em breve por aqui.</p>
-                        <p className="mt-1 text-sm text-fg-subtle">Quer que o próximo seja o seu?</p>
-                        <button onClick={() => openQuote()} className="mt-5 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"><MessageCircle size={16} /> Fazer orçamento</button>
-                    </div>
+                    <Reveal className="relative mt-16 overflow-hidden rounded-[28px] border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">
+                        <p className="text-2xl font-semibold tracking-tight">Novos projetos <span className="kt-serif italic text-[#c7d2ff]">em breve</span> por aqui.</p>
+                        <p className="mt-2 text-white/50">Quer que o próximo seja o seu?</p>
+                        <PrimaryButton onClick={() => openQuote()} className="mt-7">Fazer orçamento <ArrowRight size={17} /></PrimaryButton>
+                    </Reveal>
                 </div>
             </section>
             <Footer onQuote={() => openQuote()} />
@@ -407,55 +531,82 @@ export function ProjectsPage() {
 
 /* ------------------------------------------------------------------ Blocos */
 
-function SectionTitle({ eyebrow, title, text, center }: { eyebrow: string; title: string; text?: string; center?: boolean }) {
-    return (
-        <div className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
-            <p className="text-sm font-semibold text-primary-text">{eyebrow}</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-fg sm:text-[38px] sm:leading-tight">{title}</h2>
-            {text && <p className="mt-3 text-fg-subtle">{text}</p>}
-        </div>
-    );
-}
-
-/** Vitrine do topo: prévias reais dos projetos em janelas de navegador. */
-function HeroShowcase() {
+/** Vitrine do topo: prévias reais dos projetos em perspectiva, com destaques flutuando. */
+function Showcase() {
     const [a, b] = PORTFOLIO;
     if (!a) return null;
     return (
-        <div className="relative pb-10 sm:pb-14">
-            <BrowserFrame src={a.images[0]} alt={a.name} />
+        <div className="relative [perspective:2000px]">
+            <Glow className="inset-x-10 bottom-0 top-10 bg-[#4b6bdc]/30" />
+            <div className="relative rounded-[22px] border border-white/10 bg-white/[0.03] p-2 shadow-[0_50px_120px_-30px_rgba(0,0,0,.9)] [transform:rotateX(10deg)] sm:p-2.5">
+                <Frame src={a.images[0]} alt={a.name} />
+            </div>
             {b && (
-                <div className="absolute -bottom-2 -left-4 w-[62%] sm:-left-8">
-                    <BrowserFrame src={b.images[0]} alt={b.name} small />
+                <div className="absolute -bottom-8 -right-2 hidden w-[44%] rounded-[18px] border border-white/10 bg-white/[0.04] p-1.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,.9)] backdrop-blur sm:block lg:-right-10">
+                    <Frame src={b.images[0]} alt={b.name} />
                 </div>
             )}
+            <div className="absolute -left-3 top-[18%] hidden items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0f1a]/85 px-4 py-3 text-left shadow-2xl backdrop-blur-xl sm:flex lg:-left-12" style={{ animation: "kt-float 6s ease-in-out infinite" }}>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#25d366]/15 text-[#5ee39a]"><MessageCircle size={17} /></span>
+                <div><p className="text-[13px] font-semibold text-white">Pedido no WhatsApp</p><p className="text-[11px] text-white/45">Mensagem pronta, em 1 toque</p></div>
+            </div>
+            <div className="absolute -left-2 bottom-[12%] hidden items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0f1a]/85 px-4 py-3 text-left shadow-2xl backdrop-blur-xl md:flex lg:-left-16" style={{ animation: "kt-float 7s ease-in-out infinite 1s" }}>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#6f86ff]/20 text-[#c7d2ff]"><Smartphone size={17} /></span>
+                <div><p className="text-[13px] font-semibold text-white">Perfeito no celular</p><p className="text-[11px] text-white/45">Mobile first em tudo</p></div>
+            </div>
         </div>
     );
 }
 
-function BrowserFrame({ src, alt, small }: { src: string; alt: string; small?: boolean }) {
+function Frame({ src, alt }: { src: string; alt: string }) {
     return (
-        <div className={`overflow-hidden rounded-2xl border border-line bg-surface ${small ? "shadow-[var(--ui-shadow-lg)] ring-4 ring-bg" : "shadow-[var(--ui-shadow-lg)]"}`}>
-            <div className="flex items-center gap-1.5 border-b border-line bg-subtle px-3 py-2">
-                <span className="h-2 w-2 rounded-full bg-line-strong" /><span className="h-2 w-2 rounded-full bg-line-strong" /><span className="h-2 w-2 rounded-full bg-line-strong" />
+        <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#0b0f1a]">
+            <div className="flex items-center gap-1.5 border-b border-white/[0.06] px-3 py-2">
+                <span className="h-2 w-2 rounded-full bg-white/15" /><span className="h-2 w-2 rounded-full bg-white/15" /><span className="h-2 w-2 rounded-full bg-white/15" />
             </div>
             <img src={src} alt={`Prévia: ${alt}`} className="block aspect-[16/10] w-full object-cover object-top" />
         </div>
     );
 }
 
+/** Projeto em destaque na página inicial (imagem grande + texto, alternando os lados). */
+function ProjectRow({ item, reverse, onOpen }: { item: PortfolioItem; reverse: boolean; onOpen: () => void }) {
+    return (
+        <Reveal>
+            <article className="group grid items-center gap-8 overflow-hidden rounded-[28px] border border-white/[0.07] bg-gradient-to-b from-white/[0.04] to-white/[0.01] p-3 sm:p-4 lg:grid-cols-[1.35fr_1fr] lg:gap-12">
+                <button onClick={onOpen} aria-label={`Ver detalhes de ${item.name}`} className={`relative block overflow-hidden rounded-[20px] border border-white/[0.06] bg-[#0b0f1a] ${reverse ? "lg:order-2" : ""}`}>
+                    <img src={item.images[0]} alt={`Prévia do projeto ${item.name}`} loading="lazy" className="aspect-[16/10] w-full object-cover object-top transition duration-700 group-hover:scale-[1.025]" />
+                    <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#05070d]/40 via-transparent to-transparent" />
+                    {item.images.length > 1 && <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">{item.images.length} fotos</span>}
+                </button>
+                <div className={`px-3 pb-5 sm:px-4 lg:px-2 lg:pb-0 ${reverse ? "lg:order-1 lg:pl-8" : "lg:pr-8"}`}>
+                    <p className="text-[12px] font-medium uppercase tracking-[0.18em] text-[#9fb0ff]">{item.category}</p>
+                    <h3 className="mt-3 text-[28px] font-semibold leading-tight tracking-tight text-white sm:text-[32px]">{item.name}</h3>
+                    <p className="mt-3 leading-relaxed text-white/55">{item.summary}</p>
+                    <ul className="mt-6 space-y-2.5 text-[14.5px] text-white/70">
+                        {item.highlights.slice(0, 3).map(h => <li key={h} className="flex gap-3"><Check size={16} className="mt-0.5 shrink-0 text-[#7dd3a8]" />{h}</li>)}
+                    </ul>
+                    <button onClick={onOpen} className="mt-8 inline-flex h-11 items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-5 text-sm font-medium text-white transition hover:border-white/25 hover:bg-white/[0.08]">
+                        Ver detalhes <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                </div>
+            </article>
+        </Reveal>
+    );
+}
+
 function ProjectCard({ item, onOpen }: { item: PortfolioItem; onOpen: () => void }) {
     return (
-        <article className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-bg shadow-[var(--ui-shadow)] transition-shadow hover:shadow-[var(--ui-shadow-lg)]">
-            <button onClick={onOpen} className="relative block aspect-[16/10] overflow-hidden border-b border-line bg-subtle" aria-label={`Ver detalhes de ${item.name}`}>
-                <img src={item.images[0]} alt={`Prévia do projeto ${item.name}`} loading="lazy" className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]" />
-                {item.images.length > 1 && <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white">{item.images.length} fotos</span>}
+        <article className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-white/[0.07] bg-gradient-to-b from-white/[0.04] to-white/[0.01] p-3">
+            <button onClick={onOpen} className="relative block overflow-hidden rounded-[20px] border border-white/[0.06] bg-[#0b0f1a]" aria-label={`Ver detalhes de ${item.name}`}>
+                <img src={item.images[0]} alt={`Prévia do projeto ${item.name}`} loading="lazy" className="aspect-[16/10] w-full object-cover object-top transition duration-700 group-hover:scale-[1.03]" />
+                {item.images.length > 1 && <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">{item.images.length} fotos</span>}
             </button>
-            <div className="flex flex-1 flex-col p-5 sm:p-6">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{item.category}</p>
-                <h3 className="mt-1.5 text-lg font-semibold text-fg">{item.name}</h3>
-                <p className="mt-1.5 flex-1 text-sm leading-relaxed text-fg-subtle">{item.summary}</p>
-                <button onClick={onOpen} className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-fg hover:bg-hover">
+            <div className="flex flex-1 flex-col p-4 pt-6">
+                <p className="text-[12px] font-medium uppercase tracking-[0.18em] text-[#9fb0ff]">{item.category}</p>
+                <h3 className="mt-2 text-[22px] font-semibold tracking-tight text-white">{item.name}</h3>
+                <p className="mt-2 flex-1 text-[14.5px] leading-relaxed text-white/55">{item.summary}</p>
+                <button onClick={onOpen} className="mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-4 text-sm font-medium text-white hover:bg-white/[0.08]">
                     Ver detalhes <ArrowRight size={15} />
                 </button>
             </div>
@@ -466,57 +617,55 @@ function ProjectCard({ item, onOpen }: { item: PortfolioItem; onOpen: () => void
 /** Detalhes do projeto: fotos, descrição e funcionalidades (sem link para o sistema). */
 function ProjectModal({ item, onClose, onQuote }: { item: PortfolioItem; onClose: () => void; onQuote: () => void }) {
     const [i, setI] = useState(0);
-    useModalBehavior(onClose);
     const n = item.images.length;
     return (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-6" onClick={onClose}>
-            <div role="dialog" aria-modal="true" aria-label={item.name} onClick={e => e.stopPropagation()} className="flex max-h-[94svh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border border-line bg-surface shadow-[var(--ui-shadow-lg)] sm:rounded-3xl">
-                <div className="relative bg-subtle">
-                    <img src={item.images[i]} alt={`${item.name} — imagem ${i + 1}`} className="block max-h-[52svh] w-full object-contain" />
-                    {n > 1 && (
-                        <>
-                            <button onClick={() => setI((i - 1 + n) % n)} aria-label="Imagem anterior" className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white hover:bg-black/70"><ChevronLeft size={20} /></button>
-                            <button onClick={() => setI((i + 1) % n)} aria-label="Próxima imagem" className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white hover:bg-black/70"><ChevronRight size={20} /></button>
-                            <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white">{i + 1} / {n}</span>
-                        </>
-                    )}
-                    <button onClick={onClose} aria-label="Fechar" className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white hover:bg-black/70"><X size={18} /></button>
-                </div>
-                <div className="overflow-y-auto p-6 sm:p-8">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{item.category}</p>
-                    <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-fg">{item.name}</h2>
-                    <p className="mt-3 leading-relaxed text-fg-subtle">{item.details}</p>
-                    <ul className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
-                        {item.highlights.map(h => <li key={h} className="flex gap-2.5"><Check size={16} className="mt-0.5 shrink-0 text-success" /><span>{h}</span></li>)}
-                    </ul>
-                    <div className="mt-8 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-sm text-fg-subtle">Quer um projeto parecido para o seu negócio?</p>
-                        <button onClick={onQuote} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"><MessageCircle size={16} /> Fazer orçamento</button>
-                    </div>
+        <Modal onClose={onClose} label={item.name} wide>
+            <div className="relative bg-[#070a12]">
+                <img src={item.images[i]} alt={`${item.name} — imagem ${i + 1}`} className="block max-h-[50svh] w-full object-contain" />
+                {n > 1 && (
+                    <>
+                        <button onClick={() => setI((i - 1 + n) % n)} aria-label="Imagem anterior" className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white backdrop-blur hover:bg-black/70"><ChevronLeft size={20} /></button>
+                        <button onClick={() => setI((i + 1) % n)} aria-label="Próxima imagem" className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white backdrop-blur hover:bg-black/70"><ChevronRight size={20} /></button>
+                        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white">{i + 1} / {n}</span>
+                    </>
+                )}
+                <button onClick={onClose} aria-label="Fechar" className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white backdrop-blur hover:bg-black/70"><X size={18} /></button>
+            </div>
+            <div className="overflow-y-auto p-6 sm:p-9">
+                <p className="text-[12px] font-medium uppercase tracking-[0.18em] text-[#9fb0ff]">{item.category}</p>
+                <h2 className="mt-2 text-[30px] font-semibold tracking-tight">{item.name}</h2>
+                <p className="mt-4 leading-relaxed text-white/60">{item.details}</p>
+                <ul className="mt-7 grid gap-3 text-[14.5px] text-white/75 sm:grid-cols-2">
+                    {item.highlights.map(h => <li key={h} className="flex gap-3"><Check size={16} className="mt-0.5 shrink-0 text-[#7dd3a8]" /><span>{h}</span></li>)}
+                </ul>
+                <div className="mt-9 flex flex-col gap-4 border-t border-white/[0.07] pt-7 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-white/55">Quer um projeto parecido para o seu negócio?</p>
+                    <PrimaryButton onClick={onQuote}>Fazer orçamento <ArrowRight size={16} /></PrimaryButton>
                 </div>
             </div>
-        </div>
+        </Modal>
     );
 }
 
-export function PlanCards({ compact = false }: { compact?: boolean }) {
+export function PlanCards() {
     return (
-        <div className={`grid items-stretch gap-5 ${compact ? "mt-6" : "mt-12"} lg:grid-cols-3`}>
-            {PLANS.map(p => {
+        <div className="mt-14 grid items-stretch gap-5 lg:grid-cols-3">
+            {PLANS.map((p, idx) => {
                 const featured = !!p.highlight;
-                return (
-                    <div key={p.id} className={`relative flex flex-col rounded-2xl border bg-surface p-6 sm:p-7 ${featured ? "border-primary/50 shadow-[var(--ui-shadow-lg)] ring-1 ring-primary/30" : "border-line shadow-[var(--ui-shadow)]"}`}>
-                        <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-lg font-semibold text-fg">{p.name}</h3>
-                            {featured && <span className="rounded-full border border-primary/25 bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-primary-text">{p.highlight}</span>}
+                const card = (
+                    <div className={`relative flex h-full flex-col rounded-[27px] p-7 sm:p-8 ${featured ? "bg-[#0b1020]" : "border border-white/[0.08] bg-white/[0.025]"}`}>
+                        {featured && <Glow className="-top-20 left-1/2 h-40 w-64 -translate-x-1/2 bg-[#6f86ff]/35" />}
+                        <div className="relative flex items-center justify-between gap-2">
+                            <h3 className="text-lg font-semibold text-white">{p.name}</h3>
+                            {featured && <span className="rounded-full bg-gradient-to-r from-[#6f86ff] to-[#9f7aea] px-3 py-1 text-[11px] font-semibold text-white">{p.highlight}</span>}
                         </div>
-                        <p className="mt-1 text-sm text-fg-subtle">{p.description}</p>
-                        <p className="mt-6 flex flex-wrap items-baseline gap-x-1.5">
-                            <span className="w-full text-xs font-medium text-fg-subtle">a partir de</span>
-                            <span className="text-[36px] font-bold tracking-tight text-fg tabular">{formatBRL(p.price)}</span>
-                            <span className="text-sm text-fg-subtle">{p.period}</span>
+                        <p className="relative mt-1.5 text-sm text-white/50">{p.description}</p>
+                        <p className="relative mt-8 flex flex-wrap items-baseline gap-x-1.5">
+                            <span className="w-full text-[12px] text-white/40">a partir de</span>
+                            <span className="text-[42px] font-semibold tracking-[-0.03em] text-white tabular">{formatBRL(p.price)}</span>
+                            <span className="text-sm text-white/45">{p.period}</span>
                         </p>
-                        <p className="mt-1 min-h-4 text-xs font-medium text-success">
+                        <p className="relative mt-1 min-h-4 text-xs font-medium text-[#7dd3a8]">
                             {p.id === "anual" && `Equivale a ${formatBRL(p.price / 12)}/mês`}
                             {p.id === "vitalicio" && "Sem mensalidade"}
                         </p>
@@ -524,16 +673,19 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
                             href={whatsappLink(`Olá! Tenho interesse no plano *${p.name}* (a partir de ${formatBRL(p.price)}${p.period.startsWith("/") ? p.period : " - " + p.period}) de um sistema pronto da KT Sistemas.`)}
                             target="_blank"
                             rel="noreferrer"
-                            className={`mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors ${featured ? "bg-primary text-white shadow-[var(--ui-shadow-md)] hover:bg-primary-hover" : "border border-line bg-surface text-fg hover:bg-hover"}`}
+                            className={`relative mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold transition ${featured ? "bg-white text-[#0a0e19] hover:bg-white/90" : "border border-white/12 bg-white/[0.04] text-white hover:bg-white/[0.08]"}`}
                         >
-                            <MessageCircle size={16} /> Quero o plano {p.name.toLowerCase()}
+                            Quero o plano {p.name.toLowerCase()} <ArrowUpRight size={15} />
                         </a>
-                        {!compact && (
-                            <ul className="mt-7 flex-1 space-y-3 border-t border-line pt-6 text-sm">
-                                {PLAN_FEATURES.map(f => <li key={f} className="flex gap-2.5"><Check size={16} className="mt-0.5 shrink-0 text-success" /><span>{f}</span></li>)}
-                            </ul>
-                        )}
+                        <ul className="relative mt-8 flex-1 space-y-3 border-t border-white/[0.07] pt-7 text-[14px] text-white/65">
+                            {PLAN_FEATURES.map(f => <li key={f} className="flex gap-3"><Check size={16} className="mt-0.5 shrink-0 text-[#7dd3a8]" /><span>{f}</span></li>)}
+                        </ul>
                     </div>
+                );
+                return (
+                    <Reveal key={p.id} delay={idx * 90} className="h-full">
+                        {featured ? <div className="h-full rounded-[28px] bg-gradient-to-b from-[#8ea2ff] via-[#4b6bdc]/60 to-white/10 p-px shadow-[0_30px_80px_-30px_rgba(91,118,255,.7)]">{card}</div> : card}
+                    </Reveal>
                 );
             })}
         </div>
@@ -542,52 +694,58 @@ export function PlanCards({ compact = false }: { compact?: boolean }) {
 
 function CustomPlanCard({ onQuote }: { onQuote: () => void }) {
     return (
-        <div className="relative mt-5 overflow-hidden rounded-2xl bg-nav p-6 text-white shadow-[var(--ui-shadow-lg)] sm:p-8">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#4b6bdc]/30 blur-[90px]" />
-            <div className="relative grid gap-8 lg:grid-cols-[1.1fr_1.4fr] lg:items-center">
-                <div>
-                    <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white/85">Exclusivo</span>
-                    <h3 className="mt-3 text-2xl font-bold tracking-tight">Sistema {CUSTOM_PLAN.name.toLowerCase()}</h3>
-                    <p className="mt-2 text-sm text-white/65">{CUSTOM_PLAN.description}</p>
-                    <p className="mt-5 flex flex-wrap items-baseline gap-x-1.5">
-                        <span className="w-full text-xs font-medium text-white/60">a partir de</span>
-                        <span className="text-[34px] font-bold tracking-tight tabular">{formatBRL(CUSTOM_PLAN.price)}</span>
-                    </p>
-                    <button onClick={onQuote} className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-[#0f172a] hover:bg-white/90">
-                        <MessageCircle size={16} /> Fazer orçamento
-                    </button>
+        <Reveal className="mt-5">
+            <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-[#131a33] via-[#0b1020] to-[#0a0d18] p-7 sm:p-10">
+                <Glow className="-right-24 -top-24 h-80 w-80 bg-[#6f86ff]/30" />
+                <Glow className="-bottom-32 left-10 h-72 w-72 bg-[#9f7aea]/15" />
+                <div className="relative grid gap-10 lg:grid-cols-[1.1fr_1.4fr] lg:items-center">
+                    <div>
+                        <span className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Exclusivo</span>
+                        <h3 className="mt-5 text-[32px] font-semibold leading-tight tracking-tight text-white">Sistema <span className="kt-serif italic text-[#c7d2ff]">{CUSTOM_PLAN.name.toLowerCase()}</span></h3>
+                        <p className="mt-3 text-white/55">{CUSTOM_PLAN.description}</p>
+                        <p className="mt-7 flex flex-wrap items-baseline gap-x-1.5">
+                            <span className="w-full text-[12px] text-white/40">a partir de</span>
+                            <span className="text-[40px] font-semibold tracking-[-0.03em] tabular">{formatBRL(CUSTOM_PLAN.price)}</span>
+                        </p>
+                        <PrimaryButton onClick={onQuote} className="mt-6">Fazer orçamento <ArrowRight size={16} /></PrimaryButton>
+                    </div>
+                    <ul className="grid gap-x-6 gap-y-4 text-[14.5px] sm:grid-cols-2">
+                        {CUSTOM_PLAN.features.map(f => (
+                            <li key={f} className="flex gap-3 text-white/75"><Check size={16} className="mt-0.5 shrink-0 text-[#7dd3a8]" /><span>{f}</span></li>
+                        ))}
+                    </ul>
                 </div>
-                <ul className="grid gap-3 text-sm sm:grid-cols-2">
-                    {CUSTOM_PLAN.features.map(f => (
-                        <li key={f} className="flex gap-2.5 text-white/85"><Check size={16} className="mt-0.5 shrink-0 text-[#8fd1a8]" /><span>{f}</span></li>
-                    ))}
-                </ul>
             </div>
-        </div>
+        </Reveal>
     );
 }
 
 function Faq() {
     const [open, setOpen] = useState<number | null>(0);
     return (
-        <section id="duvidas" className="scroll-mt-16 py-20 sm:py-24">
-            <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr]">
+        <section id="duvidas" className="relative scroll-mt-24 py-16 sm:py-24">
+            <div className="mx-auto grid max-w-6xl gap-12 px-5 sm:px-6 lg:grid-cols-[1fr_1.5fr]">
                 <div>
-                    <SectionTitle eyebrow="Dúvidas" title="Perguntas frequentes" text="Não achou sua resposta? Chame a gente no WhatsApp." />
-                    <a href={whatsappLink("Olá! Tenho uma dúvida sobre os serviços da KT Sistemas.")} target="_blank" rel="noreferrer" className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-semibold text-fg shadow-[var(--ui-shadow)] hover:bg-hover">
-                        <MessageCircle size={16} /> Falar no WhatsApp
-                    </a>
+                    <SectionTitle eyebrow="Dúvidas" title={<>Perguntas <span className="kt-serif italic text-[#c7d2ff]">frequentes</span></>} text="Não achou sua resposta? Chame a gente no WhatsApp." />
+                    <Reveal>
+                        <a href={whatsappLink("Olá! Tenho uma dúvida sobre os serviços da KT Sistemas.")} target="_blank" rel="noreferrer" className="mt-8 inline-flex h-11 items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-5 text-sm font-medium text-white hover:bg-white/[0.08]">
+                            <MessageCircle size={16} /> Falar no WhatsApp
+                        </a>
+                    </Reveal>
                 </div>
-                <div className="divide-y divide-line rounded-2xl border border-line bg-surface">
+                <Reveal className="divide-y divide-white/[0.07] rounded-[28px] border border-white/[0.07] bg-white/[0.02] px-2">
                     {FAQ.map((f, i) => (
                         <div key={f.q}>
-                            <button onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-[15px] font-medium text-fg">
-                                {f.q}<ChevronDown size={18} className={`shrink-0 text-fg-faint transition-transform ${open === i ? "rotate-180" : ""}`} />
+                            <button onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i} className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left text-[16px] font-medium text-white">
+                                {f.q}
+                                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 transition-transform duration-300 ${open === i ? "rotate-45 bg-white/10" : ""}`}><Plus size={16} /></span>
                             </button>
-                            {open === i && <p className="-mt-1 px-5 pb-5 text-sm leading-relaxed text-fg-subtle">{f.a}</p>}
+                            <div className={`grid transition-all duration-300 ${open === i ? "grid-rows-[1fr] pb-5" : "grid-rows-[0fr]"}`}>
+                                <p className="overflow-hidden px-5 text-[14.5px] leading-relaxed text-white/55">{f.a}</p>
+                            </div>
                         </div>
                     ))}
-                </div>
+                </Reveal>
             </div>
         </section>
     );
@@ -595,30 +753,26 @@ function Faq() {
 
 function ContactBand({ onQuote }: { onQuote: () => void }) {
     return (
-        <section id="contato" className="scroll-mt-16 px-4 pb-20 sm:px-6">
-            <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-nav px-6 py-14 text-white sm:px-14 sm:py-16">
-                <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgb(255_255_255/0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
-                <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#4b6bdc]/25 blur-[100px]" />
-                <div className="relative grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
-                    <div>
-                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Vamos tirar seu projeto do papel?</h2>
-                        <p className="mt-3 max-w-xl text-white/65">Conte o que você precisa e receba uma proposta sem compromisso. Respondemos rapidinho pelo WhatsApp.</p>
-                        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                            <button onClick={onQuote} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-[#0f172a] hover:bg-white/90">
-                                <MessageCircle size={18} /> Fazer orçamento
-                            </button>
-                            <a href={mailtoLink("Orçamento — KT Sistemas", "Olá! Gostaria de um orçamento para um projeto.")} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 font-semibold text-white hover:bg-white/10">
-                                <Mail size={18} /> Enviar e-mail
-                            </a>
-                        </div>
+        <section id="contato" className="relative scroll-mt-24 px-5 pb-24 pt-8 sm:px-6">
+            <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#1a2350] via-[#101632] to-[#0a0d18] px-6 py-16 text-center sm:px-14 sm:py-24">
+                <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,.07)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
+                <Glow className="left-1/2 top-[-120px] h-80 w-[640px] -translate-x-1/2 bg-[#6f86ff]/35" />
+                <div className="relative">
+                    <h2 className="mx-auto max-w-3xl text-[36px] font-semibold leading-[1.05] tracking-[-0.035em] text-white sm:text-[60px]">
+                        Vamos construir algo <span className="kt-serif kt-gradient-text italic">incrível</span> juntos?
+                    </h2>
+                    <p className="mx-auto mt-5 max-w-xl text-[17px] text-white/60">Conte o que você precisa e receba uma proposta sem compromisso. Respondemos rapidinho pelo WhatsApp.</p>
+                    <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                        <button onClick={onQuote} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-7 text-[15px] font-semibold text-[#0a0e19] transition hover:bg-white/90 sm:w-auto">
+                            Fazer orçamento <ArrowRight size={17} />
+                        </button>
+                        <a href={mailtoLink("Orçamento — KT Sistemas", "Olá! Gostaria de um orçamento para um projeto.")} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-7 text-[15px] font-medium text-white hover:bg-white/10 sm:w-auto">
+                            <Mail size={17} /> Enviar e-mail
+                        </a>
                     </div>
-                    <div className="space-y-3.5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm">
-                        <p className="flex items-center gap-3"><MessageCircle size={17} className="shrink-0 text-white/50" /> {COMPANY.whatsappDisplay}</p>
-                        <p className="flex items-center gap-3 break-all"><Mail size={17} className="shrink-0 text-white/50" /> {COMPANY.email}</p>
-                        <p className="flex items-center gap-3"><LifeBuoy size={17} className="shrink-0 text-white/50" /> Suporte depois da entrega</p>
-                    </div>
+                    <p className="mt-8 text-sm text-white/40">{COMPANY.whatsappDisplay} · {COMPANY.email}</p>
                 </div>
-            </div>
+            </Reveal>
         </section>
     );
 }
