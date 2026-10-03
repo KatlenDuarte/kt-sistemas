@@ -13,6 +13,14 @@
 }
 
 @theme inline {
+  --color-ink: var(--kt-ink);
+  --color-inkbg: var(--kt-inkbg);
+  --color-kt-bg: var(--kt-bg);
+  --color-kt-surface: var(--kt-surface);
+  --color-kt-raised: var(--kt-raised);
+  --color-kt-accent: var(--kt-accent);
+  --color-kt-accent-strong: var(--kt-accent-strong);
+  --color-kt-check: var(--kt-check);
   --color-bg: var(--ui-bg);
   --color-nav: var(--ui-nav);
   --color-surface: var(--ui-surface);
@@ -155,14 +163,45 @@ html.theme-transition *::after {
 }
 
 /* ---- Site público (design premium) ---- */
+/* Tema escuro é o padrão; .kt-light troca para o claro e
+   .kt-force-dark mantém um bloco escuro mesmo no tema claro. */
+:root, .kt-site, .kt-site.kt-light .kt-force-dark {
+  --kt-ink: #ffffff;
+  --kt-inkbg: #0a0e19;
+  --kt-bg: #05070d;
+  --kt-surface: #070a12;
+  --kt-raised: #0b0f1a;
+  --kt-accent: #9fb0ff;
+  --kt-accent-strong: #c7d2ff;
+  --kt-check: #7dd3a8;
+  --kt-grid: rgba(255, 255, 255, 0.035);
+  --kt-shadow: rgba(0, 0, 0, 0.8);
+  color-scheme: dark;
+}
+.kt-site.kt-light {
+  --kt-ink: #0b1020;
+  --kt-inkbg: #ffffff;
+  --kt-bg: #f5f6fb;
+  --kt-surface: #ffffff;
+  --kt-raised: #ffffff;
+  --kt-accent: #4458d0;
+  --kt-accent-strong: #3a4fc7;
+  --kt-check: #15a35a;
+  --kt-grid: rgba(11, 16, 32, 0.05);
+  --kt-shadow: rgba(20, 30, 70, 0.22);
+  color-scheme: light;
+}
+.kt-site { transition: background-color .4s ease, color .4s ease; }
 @layer components {
   .kt-input {
-    @apply w-full rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-[15px] text-white placeholder:text-white/30 outline-none transition focus:border-[#7c93ff]/70 focus:bg-white/[0.06] focus:ring-[3px] focus:ring-[#7c93ff]/15;
+    @apply w-full rounded-xl border border-ink/10 bg-ink/[0.04] px-3.5 py-2.5 text-[15px] text-ink placeholder:text-ink/35 outline-none transition focus:border-[#7c93ff]/70 focus:bg-ink/[0.06] focus:ring-[3px] focus:ring-[#7c93ff]/15;
   }
   select.kt-input { @apply cursor-pointer pr-8; }
   select.kt-input option { color: #0b1020; }
   .kt-serif { font-family: "Instrument Serif", ui-serif, Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
   .kt-gradient-text { background: linear-gradient(100deg, #c7d2ff 0%, #8ea2ff 45%, #b8c7f5 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .kt-light .kt-gradient-text { background-image: linear-gradient(100deg, #2b3fb8 0%, #5b6ff0 45%, #7b4fd6 100%); }
+  .kt-light .kt-force-dark .kt-gradient-text { background-image: linear-gradient(100deg, #c7d2ff 0%, #8ea2ff 45%, #b8c7f5 100%); }
   .kt-reveal { opacity: 0; transform: translateY(18px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
   .kt-reveal.is-visible { opacity: 1; transform: none; }
   .kt-marquee { animation: kt-marquee 40s linear infinite; }
