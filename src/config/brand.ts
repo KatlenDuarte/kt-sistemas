@@ -8,6 +8,24 @@ export const COMPANY = {
     email: "katlenduarte.dev@gmail.com",
 };
 
+/** SaaS de barbearias (sistema próprio, em subdomínio). Troque o endereço aqui se mudar. */
+export const BARBER_SYSTEM = {
+    name: "Sistema para Barbearias",
+    url: "https://barbearia.kt-sistemas.com.br",
+    /** Página de agendamento de exemplo (modo demonstração). */
+    demoBookingUrl: "https://barbearia.kt-sistemas.com.br/b/black-barber?demo=1",
+    priceFrom: 69.9,
+    trialDays: 7,
+    highlights: [
+        "Agenda online com link e QR Code próprios",
+        "Clientes agendam pelo celular, 24 horas",
+        "Lembretes e confirmações pelo WhatsApp",
+        "Caixa, vendas, estoque e financeiro",
+        "Comissões, planos de assinatura e fidelidade",
+        "Com a logo e as cores da barbearia",
+    ],
+};
+
 export type PlanId = "mensal" | "anual" | "vitalicio";
 
 export interface Plan {

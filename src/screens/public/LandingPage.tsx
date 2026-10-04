@@ -4,10 +4,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
     Globe, LayoutTemplate, ShoppingBag, Smartphone, LayoutDashboard, CalendarClock, UtensilsCrossed, Bot,
     CreditCard, BedDouble, Wrench, Check, MessageCircle, Mail, Plus, Menu, X, ArrowRight, ArrowUpRight,
-    Cloud, Headphones, Palette, Rocket, ClipboardList, Code2, Sparkles, ChevronLeft, ChevronRight, Send, Sun, Moon,
+    Cloud, Headphones, Palette, Rocket, ClipboardList, Code2, Sparkles, ChevronLeft, ChevronRight, Send, Sun, Moon, Scissors,
     type LucideIcon,
 } from "lucide-react";
-import { COMPANY, CUSTOM_PLAN, PLANS, PLAN_FEATURES, PORTFOLIO, SEGMENTS, whatsappLink, mailtoLink, type PortfolioItem } from "../../config/brand";
+import { BARBER_SYSTEM, COMPANY, CUSTOM_PLAN, PLANS, PLAN_FEATURES, PORTFOLIO, SEGMENTS, whatsappLink, mailtoLink, type PortfolioItem } from "../../config/brand";
 import { formatBRL } from "../../lib/format";
 import { navigate } from "../../lib/router";
 
@@ -318,7 +318,10 @@ function Header({ onQuote, isLight, onToggleTheme }: { onQuote: () => void } & T
                 </nav>
                 <span className="flex-1" />
                 <ThemeToggle isLight={isLight} onToggleTheme={onToggleTheme} />
-                <button onClick={onQuote} className="hidden h-10 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-inkbg transition hover:bg-ink/90 sm:inline-flex">
+                <a href={BARBER_SYSTEM.url} title={BARBER_SYSTEM.name} className="hidden h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-ink/12 bg-ink/[0.04] px-4 text-sm font-semibold text-ink transition hover:border-ink/25 hover:bg-ink/[0.08] md:inline-flex">
+                    <Scissors size={15} className="text-[#c08a2e]" /> Barbearias
+                </a>
+                <button onClick={onQuote} className="hidden h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-ink px-5 text-sm font-semibold text-inkbg transition hover:bg-ink/90 sm:inline-flex">
                     Fazer orçamento <ArrowUpRight size={15} />
                 </button>
                 <button onClick={() => setMenu(!menu)} aria-label="Menu" className="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-ink/10 lg:hidden">{menu ? <X size={20} /> : <Menu size={20} />}</button>
@@ -328,6 +331,9 @@ function Header({ onQuote, isLight, onToggleTheme }: { onQuote: () => void } & T
                     {NAV.map(([id, l]) => (
                         <button key={id} onClick={() => { setMenu(false); goTo(id); }} className="block w-full rounded-2xl px-4 py-3 text-left text-[15px] font-medium text-ink/85 hover:bg-ink/[0.06]">{l}</button>
                     ))}
+                    <a href={BARBER_SYSTEM.url} className="flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold text-ink hover:bg-ink/[0.06]">
+                        <Scissors size={16} className="text-[#c08a2e]" /> {BARBER_SYSTEM.name}
+                    </a>
                     <button onClick={() => { setMenu(false); onQuote(); }} className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-sm font-semibold text-inkbg">Fazer orçamento <ArrowUpRight size={15} /></button>
                 </div>
             )}
@@ -349,6 +355,7 @@ function Footer({ onQuote, isLight }: { onQuote: () => void; isLight: boolean })
                         <li><button onClick={() => goTo("servicos")} className="hover:text-ink">Serviços</button></li>
                         <li><a href="#/projetos" className="hover:text-ink">Projetos</a></li>
                         <li><button onClick={() => goTo("planos")} className="hover:text-ink">Planos</button></li>
+                        <li><a href={BARBER_SYSTEM.url} className="hover:text-ink">{BARBER_SYSTEM.name}</a></li>
                         <li><button onClick={onQuote} className="hover:text-ink">Fazer orçamento</button></li>
                     </ul>
                 </div>
@@ -364,6 +371,78 @@ function Footer({ onQuote, isLight }: { onQuote: () => void; isLight: boolean })
                 <p className="mx-auto max-w-6xl px-5 py-6 text-xs text-ink/30 sm:px-6">© {new Date().getFullYear()} {COMPANY.name}. Todos os direitos reservados.</p>
             </div>
         </footer>
+    );
+}
+
+/* ------------------------------------------------------------------ Sistema para barbearias */
+
+function BarberShowcase() {
+    return (
+        <section id="barbearias" className="relative scroll-mt-24 py-16 sm:py-24">
+            <Glow className="left-[-120px] top-10 h-[420px] w-[520px] bg-[#d4a24c]/15" />
+            <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                <Reveal className="overflow-hidden rounded-[32px] border border-ink/10 bg-kt-raised/60 backdrop-blur">
+                    <div className="grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_1fr] lg:p-14">
+                        <div>
+                            <span className="inline-flex items-center gap-2 rounded-full border border-[#d4a24c]/40 bg-[#d4a24c]/10 px-3 py-1 text-[12px] font-semibold text-[#b8862f]">
+                                <Scissors size={13} /> Produto KT Sistemas
+                            </span>
+                            <h2 className="mt-5 text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink sm:text-[44px]">
+                                O sistema completo para <span className="kt-serif italic text-[#c08a2e]">barbearias</span>
+                            </h2>
+                            <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink/55">
+                                Agenda online, clientes, profissionais, caixa e financeiro num só lugar — pronto para usar, com a marca da sua barbearia.
+                            </p>
+                            <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                                {BARBER_SYSTEM.highlights.map((h) => (
+                                    <li key={h} className="flex items-start gap-2 text-[14px] text-ink/70">
+                                        <Check size={16} className="mt-0.5 shrink-0 text-kt-check" /> {h}
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                                <a href={BARBER_SYSTEM.url} className="group inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-b from-[#e0b866] to-[#c08a2e] px-7 text-[15px] font-semibold text-[#0b0b0c] shadow-[0_10px_30px_-12px_rgba(212,162,76,.9)] transition hover:brightness-110">
+                                    Conhecer o sistema <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+                                </a>
+                                <GhostLink href={BARBER_SYSTEM.demoBookingUrl} className="whitespace-nowrap">Ver agendamento de exemplo</GhostLink>
+                            </div>
+                            <p className="mt-4 text-[13px] text-ink/40">
+                                {BARBER_SYSTEM.trialDays} dias grátis · a partir de {formatBRL(BARBER_SYSTEM.priceFrom)}/mês
+                            </p>
+                        </div>
+
+                        {/* Prévia do agendamento no celular */}
+                        <div className="relative mx-auto w-full max-w-[300px]">
+                            <div className="rounded-[36px] border border-ink/10 bg-[#0b0b0c] p-3 shadow-[0_40px_80px_-30px_var(--kt-shadow)]">
+                                <div className="rounded-[28px] bg-[#121214] p-4 text-left text-[#e4e4e7]">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d4a24c] text-sm font-black text-[#0b0b0c]">B</div>
+                                        <div>
+                                            <div className="text-[13px] font-bold text-white">Black Barber</div>
+                                            <div className="text-[10px] text-[#71717a]">Agende seu horário</div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 space-y-2">
+                                        {[["Corte", "R$ 40,00"], ["Barba", "R$ 30,00"], ["Corte + Barba", "R$ 65,00"]].map(([n, p]) => (
+                                            <div key={n} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-[12px]">
+                                                <span className="font-semibold text-white">{n}</span>
+                                                <span className="text-[#a1a1aa]">{p}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="mt-3 grid grid-cols-4 gap-1.5">
+                                        {["09:00", "09:30", "10:00", "10:30", "11:00", "13:00", "13:30", "14:00"].map((h, i) => (
+                                            <span key={h} className={`rounded-lg py-1.5 text-center text-[10px] font-semibold ${i === 2 ? "bg-[#d4a24c] text-[#0b0b0c]" : "border border-white/10 text-white"}`}>{h}</span>
+                                        ))}
+                                    </div>
+                                    <div className="mt-3 rounded-xl bg-[#d4a24c] py-2.5 text-center text-[12px] font-bold text-[#0b0b0c]">Confirmar agendamento</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Reveal>
+            </div>
+        </section>
     );
 }
 
@@ -516,6 +595,9 @@ export default function LandingPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ---------------- Sistema para barbearias ---------------- */}
+            <BarberShowcase />
 
             {/* ---------------- Planos ---------------- */}
             <section id="planos" className="relative scroll-mt-24 py-16 sm:py-24">
