@@ -16,6 +16,13 @@ export const BARBER_SYSTEM = {
     demoBookingUrl: "https://barbearia.kt-sistemas.com/b/black-barber?demo=1",
     priceFrom: 69.9,
     trialDays: 7,
+    /** Promoção de inauguração: 1º mês pago. Mesmo valor do sistema (src/lib/pricing.ts lá). */
+    plans: [
+        { name: "Essencial", range: "Até 3 barbeiros", price: 69.9, launchPrice: 49.9 },
+        { name: "Profissional", range: "Até 10 barbeiros", price: 109.9, launchPrice: 89.9, highlight: true },
+        { name: "Premium", range: "Barbeiros ilimitados", price: 159.9, launchPrice: 139.9 },
+    ],
+    cycles: "Semestral com 5% off · Anual com 10% off",
     highlights: [
         "Agenda online com link e QR Code próprios",
         "Clientes agendam pelo celular, 24 horas",

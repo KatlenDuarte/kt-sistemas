@@ -400,6 +400,27 @@ function BarberShowcase() {
                                     </li>
                                 ))}
                             </ul>
+                            <div className="mt-7">
+                                <div className="inline-flex items-center gap-1.5 rounded-full bg-[#d4a24c]/15 px-3 py-1 text-[12px] font-bold uppercase tracking-wide text-[#a87a2a]">
+                                    🎉 Promoção de inauguração · 1º mês
+                                </div>
+                                <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
+                                    {BARBER_SYSTEM.plans.map((p) => (
+                                        <a
+                                            key={p.name}
+                                            href={`${BARBER_SYSTEM.url}/#planos`}
+                                            className={`rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${p.highlight ? "border-[#d4a24c] bg-[#d4a24c]/[0.07]" : "border-ink/10"}`}
+                                        >
+                                            <div className="text-[14px] font-bold text-ink">{p.name}</div>
+                                            <div className="text-[12px] text-ink/50">{p.range}</div>
+                                            <div className="mt-2 text-[12px] text-ink/40 line-through">{formatBRL(p.price)}/mês</div>
+                                            <div className="text-[20px] font-extrabold leading-tight text-ink">{formatBRL(p.launchPrice)}</div>
+                                            <div className="text-[11px] text-ink/50">no 1º mês · depois {formatBRL(p.price)}/mês</div>
+                                        </a>
+                                    ))}
+                                </div>
+                                <p className="mt-2.5 text-[12px] text-ink/50">{BARBER_SYSTEM.cycles} — o desconto vale também sobre o mês promocional.</p>
+                            </div>
                             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                                 <a href={BARBER_SYSTEM.url} className="group inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-b from-[#e0b866] to-[#c08a2e] px-7 text-[15px] font-semibold text-[#0b0b0c] shadow-[0_10px_30px_-12px_rgba(212,162,76,.9)] transition hover:brightness-110">
                                     Conhecer o sistema <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
@@ -407,7 +428,7 @@ function BarberShowcase() {
                                 <GhostLink href={BARBER_SYSTEM.demoBookingUrl} className="whitespace-nowrap">Ver agendamento de exemplo</GhostLink>
                             </div>
                             <p className="mt-4 text-[13px] text-ink/40">
-                                {BARBER_SYSTEM.trialDays} dias grátis · a partir de {formatBRL(BARBER_SYSTEM.priceFrom)}/mês
+                                {BARBER_SYSTEM.trialDays} dias grátis, sem cartão · 1º mês a partir de {formatBRL(BARBER_SYSTEM.plans[0].launchPrice)}
                             </p>
                         </div>
 
