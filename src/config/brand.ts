@@ -11,9 +11,9 @@ export const COMPANY = {
 /** SaaS de barbearias (sistema próprio, em subdomínio). Troque o endereço aqui se mudar. */
 export const BARBER_SYSTEM = {
     name: "Sistema para Barbearias",
-    url: "https://barbearia.kt-sistemas.com.br",
+    url: "https://barbearia.kt-sistemas.com",
     /** Página de agendamento de exemplo (modo demonstração). */
-    demoBookingUrl: "https://barbearia.kt-sistemas.com.br/b/black-barber?demo=1",
+    demoBookingUrl: "https://barbearia.kt-sistemas.com/b/black-barber?demo=1",
     priceFrom: 69.9,
     trialDays: 7,
     highlights: [
