@@ -292,7 +292,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 /* ------------------------------------------------------------------ Cabeçalho e rodapé */
 
-const NAV: [string, string][] = [["servicos", "Serviços"], ["projetos", "Projetos"], ["planos", "Planos"], ["processo", "Processo"], ["duvidas", "Dúvidas"]];
+const NAV: [string, string][] = [["servicos", "Serviços"], ["sistemas", "Sistemas"], ["projetos", "Projetos"], ["planos", "Planos"], ["processo", "Processo"], ["duvidas", "Dúvidas"]];
 
 const goTo = (id: string) => {
     const el = document.getElementById(id);
@@ -318,9 +318,6 @@ function Header({ onQuote, isLight, onToggleTheme }: { onQuote: () => void } & T
                 </nav>
                 <span className="flex-1" />
                 <ThemeToggle isLight={isLight} onToggleTheme={onToggleTheme} />
-                <a href={BARBER_SYSTEM.url} title={BARBER_SYSTEM.name} className="hidden h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-ink/12 bg-ink/[0.04] px-4 text-sm font-semibold text-ink transition hover:border-ink/25 hover:bg-ink/[0.08] md:inline-flex">
-                    <Scissors size={15} className="text-[#c08a2e]" /> Barbearias
-                </a>
                 <button onClick={onQuote} className="hidden h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-ink px-5 text-sm font-semibold text-inkbg transition hover:bg-ink/90 sm:inline-flex">
                     Fazer orçamento <ArrowUpRight size={15} />
                 </button>
@@ -331,9 +328,6 @@ function Header({ onQuote, isLight, onToggleTheme }: { onQuote: () => void } & T
                     {NAV.map(([id, l]) => (
                         <button key={id} onClick={() => { setMenu(false); goTo(id); }} className="block w-full rounded-2xl px-4 py-3 text-left text-[15px] font-medium text-ink/85 hover:bg-ink/[0.06]">{l}</button>
                     ))}
-                    <a href={BARBER_SYSTEM.url} className="flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold text-ink hover:bg-ink/[0.06]">
-                        <Scissors size={16} className="text-[#c08a2e]" /> {BARBER_SYSTEM.name}
-                    </a>
                     <button onClick={() => { setMenu(false); onQuote(); }} className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-sm font-semibold text-inkbg">Fazer orçamento <ArrowUpRight size={15} /></button>
                 </div>
             )}
@@ -344,7 +338,7 @@ function Header({ onQuote, isLight, onToggleTheme }: { onQuote: () => void } & T
 function Footer({ onQuote, isLight }: { onQuote: () => void; isLight: boolean }) {
     return (
         <footer className="relative border-t border-ink/[0.06]">
-            <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:px-6 md:grid-cols-[1.6fr_1fr_1fr]">
+            <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:px-6 sm:grid-cols-2 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
                 <div>
                     <KtLogo light={!isLight} />
                     <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/45">{COMPANY.tagline}.</p>
@@ -355,8 +349,14 @@ function Footer({ onQuote, isLight }: { onQuote: () => void; isLight: boolean })
                         <li><button onClick={() => goTo("servicos")} className="hover:text-ink">Serviços</button></li>
                         <li><a href="#/projetos" className="hover:text-ink">Projetos</a></li>
                         <li><button onClick={() => goTo("planos")} className="hover:text-ink">Planos</button></li>
-                        <li><a href={BARBER_SYSTEM.url} className="hover:text-ink">{BARBER_SYSTEM.name}</a></li>
                         <li><button onClick={onQuote} className="hover:text-ink">Fazer orçamento</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-ink/40">Nossos sistemas</p>
+                    <ul className="mt-4 space-y-2.5 text-sm text-ink/60">
+                        <li><a href={BARBER_SYSTEM.url} className="hover:text-ink">{BARBER_SYSTEM.name}</a></li>
+                        {OTHER_SYSTEMS.map(s => <li key={s.title}><button onClick={() => openSystem(s, onQuote)} className="text-left hover:text-ink">{s.title}</button></li>)}
                     </ul>
                 </div>
                 <div>
@@ -374,22 +374,35 @@ function Footer({ onQuote, isLight }: { onQuote: () => void; isLight: boolean })
     );
 }
 
-/* ------------------------------------------------------------------ Sistema para barbearias */
+/* ------------------------------------------------------------------ Nossos sistemas */
 
-function BarberShowcase() {
+/** Outros sistemas da KT (a barbearia aparece em destaque, acima deles).
+ *  Com `quoteType` o card abre o orçamento já preenchido; sem ele, leva aos planos. */
+const OTHER_SYSTEMS: { icon: LucideIcon; title: string; text: string; cta: string; quoteType?: string }[] = [
+    { icon: LayoutDashboard, title: "Gestão para lojas", text: "Vendas, estoque, fiado, caixa e relatórios para assistência técnica, loja de celular, tabacaria, roupas e comércio em geral.", cta: "Ver planos" },
+    { icon: BedDouble, title: "Reservas para hospedagem", text: "Site com calendário de disponibilidade, cálculo das diárias e pré-reserva direto no WhatsApp.", cta: "Pedir orçamento", quoteType: "Reservas e hospedagem" },
+    { icon: Sparkles, title: "Sistema sob medida", text: "Não achou o seu segmento? Criamos um sistema exclusivo, do jeito que o seu negócio funciona.", cta: "Pedir orçamento", quoteType: "Sistema sob medida" },
+];
+
+const openSystem = (s: (typeof OTHER_SYSTEMS)[number], onQuote: (type?: string) => void) =>
+    s.quoteType ? onQuote(s.quoteType) : goTo("planos");
+
+function SystemsSection({ onQuote }: { onQuote: (type?: string) => void }) {
     return (
-        <section id="barbearias" className="relative scroll-mt-24 py-16 sm:py-24">
-            <Glow className="left-[-120px] top-10 h-[420px] w-[520px] bg-[#d4a24c]/15" />
+        <section id="sistemas" className="relative scroll-mt-24 py-16 sm:py-24">
+            <Glow className="left-[-120px] top-40 h-[420px] w-[520px] bg-[#d4a24c]/15" />
             <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                <SectionTitle eyebrow="Nossos sistemas" title={<>Conheça nossos <span className="kt-serif italic text-kt-accent-strong">sistemas</span></>} text="Sistemas prontos, com a sua marca, para começar a usar hoje — escolha o do seu segmento." />
+                <div id="barbearias" className="mt-14 scroll-mt-24" />
                 <Reveal className="overflow-hidden rounded-[32px] border border-ink/10 bg-kt-raised/60 backdrop-blur">
                     <div className="grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_1fr] lg:p-14">
                         <div>
                             <span className="inline-flex items-center gap-2 rounded-full border border-[#d4a24c]/40 bg-[#d4a24c]/10 px-3 py-1 text-[12px] font-semibold text-[#b8862f]">
-                                <Scissors size={13} /> Produto KT Sistemas
+                                <Scissors size={13} /> Destaque · Disponível agora
                             </span>
-                            <h2 className="mt-5 text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink sm:text-[44px]">
-                                O sistema completo para <span className="kt-serif italic text-[#c08a2e]">barbearias</span>
-                            </h2>
+                            <h3 className="mt-5 text-[30px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink sm:text-[40px]">
+                                Sistema completo para <span className="kt-serif italic text-[#c08a2e]">barbearias</span>
+                            </h3>
                             <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink/55">
                                 Agenda online, clientes, profissionais, caixa e financeiro num só lugar — pronto para usar, com a marca da sua barbearia.
                             </p>
@@ -462,6 +475,27 @@ function BarberShowcase() {
                         </div>
                     </div>
                 </Reveal>
+
+                {/* Demais sistemas */}
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                    {OTHER_SYSTEMS.map((s, i) => (
+                        <Reveal key={s.title} delay={i * 70}>
+                            <button
+                                onClick={() => openSystem(s, onQuote)}
+                                className="group flex h-full w-full flex-col rounded-3xl border border-ink/[0.07] bg-gradient-to-b from-ink/[0.045] to-ink/[0.01] p-7 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#7c93ff]/35"
+                            >
+                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-ink/10 bg-gradient-to-b from-ink/[0.08] to-ink/[0.02] text-kt-accent-strong">
+                                    <s.icon size={21} strokeWidth={1.6} />
+                                </span>
+                                <h3 className="mt-6 text-[18px] font-semibold tracking-tight text-ink">{s.title}</h3>
+                                <p className="mt-2 flex-1 text-[14.5px] leading-relaxed text-ink/50">{s.text}</p>
+                                <span className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-kt-accent opacity-70 transition group-hover:opacity-100">
+                                    {s.cta} <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                                </span>
+                            </button>
+                        </Reveal>
+                    ))}
+                </div>
             </div>
         </section>
     );
@@ -584,6 +618,9 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* ---------------- Nossos sistemas (barbearia em destaque) ---------------- */}
+            <SystemsSection onQuote={openQuote} />
+
             {/* ---------------- Projetos ---------------- */}
             <section id="projetos" className="relative scroll-mt-24 py-16 sm:py-24">
                 <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
@@ -616,9 +653,6 @@ export default function LandingPage() {
                     </div>
                 </div>
             </section>
-
-            {/* ---------------- Sistema para barbearias ---------------- */}
-            <BarberShowcase />
 
             {/* ---------------- Planos ---------------- */}
             <section id="planos" className="relative scroll-mt-24 py-16 sm:py-24">
