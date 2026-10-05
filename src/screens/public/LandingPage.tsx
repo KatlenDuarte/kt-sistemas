@@ -295,6 +295,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 const NAV: [string, string][] = [["servicos", "Serviços"], ["sistemas", "Sistemas"], ["projetos", "Projetos"], ["planos", "Planos"], ["processo", "Processo"], ["duvidas", "Dúvidas"]];
 
 const goTo = (id: string) => {
+    if (id === "sistemas") return navigate("/sistemas");
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth" });
     else { navigate("/"); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 140); }
@@ -356,7 +357,7 @@ function Footer({ onQuote, isLight }: { onQuote: () => void; isLight: boolean })
                     <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-ink/40">Nossos sistemas</p>
                     <ul className="mt-4 space-y-2.5 text-sm text-ink/60">
                         <li><a href={BARBER_SYSTEM.url} className="hover:text-ink">{BARBER_SYSTEM.name}</a></li>
-                        {OTHER_SYSTEMS.map(s => <li key={s.title}><button onClick={() => openSystem(s, onQuote)} className="text-left hover:text-ink">{s.title}</button></li>)}
+                        {OTHER_SYSTEMS.map(s => <li key={s.title}><a href="#/sistemas" className="hover:text-ink">{s.title}</a></li>)}
                     </ul>
                 </div>
                 <div>
@@ -387,117 +388,149 @@ const OTHER_SYSTEMS: { icon: LucideIcon; title: string; text: string; cta: strin
 const openSystem = (s: (typeof OTHER_SYSTEMS)[number], onQuote: (type?: string) => void) =>
     s.quoteType ? onQuote(s.quoteType) : goTo("planos");
 
-function SystemsSection({ onQuote }: { onQuote: (type?: string) => void }) {
+/** Na página inicial: só os botões. O detalhe de cada sistema fica na página /sistemas. */
+function SystemsTeaser() {
+    const items: [LucideIcon, string][] = [[Scissors, "Barbearias"], ...OTHER_SYSTEMS.map(s => [s.icon, s.title] as [LucideIcon, string])];
     return (
-        <section id="sistemas" className="relative scroll-mt-24 py-16 sm:py-24">
-            <Glow className="left-[-120px] top-40 h-[420px] w-[520px] bg-[#d4a24c]/15" />
-            <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
-                <SectionTitle eyebrow="Nossos sistemas" title={<>Conheça nossos <span className="kt-serif italic text-kt-accent-strong">sistemas</span></>} text="Sistemas prontos, com a sua marca, para começar a usar hoje — escolha o do seu segmento." />
-                <div id="barbearias" className="mt-14 scroll-mt-24" />
-                <Reveal className="overflow-hidden rounded-[32px] border border-ink/10 bg-kt-raised/60 backdrop-blur">
-                    <div className="grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_1fr] lg:p-14">
-                        <div>
-                            <span className="inline-flex items-center gap-2 rounded-full border border-[#d4a24c]/40 bg-[#d4a24c]/10 px-3 py-1 text-[12px] font-semibold text-[#b8862f]">
-                                <Scissors size={13} /> Destaque · Disponível agora
-                            </span>
-                            <h3 className="mt-5 text-[30px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink sm:text-[40px]">
-                                Sistema completo para <span className="kt-serif italic text-[#c08a2e]">barbearias</span>
-                            </h3>
-                            <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink/55">
-                                Agenda online, clientes, profissionais, caixa e financeiro num só lugar — pronto para usar, com a marca da sua barbearia.
-                            </p>
-                            <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                                {BARBER_SYSTEM.highlights.map((h) => (
-                                    <li key={h} className="flex items-start gap-2 text-[14px] text-ink/70">
-                                        <Check size={16} className="mt-0.5 shrink-0 text-kt-check" /> {h}
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="mt-7">
-                                <div className="inline-flex items-center gap-1.5 rounded-full bg-[#d4a24c]/15 px-3 py-1 text-[12px] font-bold uppercase tracking-wide text-[#a87a2a]">
-                                    🎉 Promoção de inauguração · 1º mês
-                                </div>
-                                <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
-                                    {BARBER_SYSTEM.plans.map((p) => (
-                                        <a
-                                            key={p.name}
-                                            href={`${BARBER_SYSTEM.url}/#planos`}
-                                            className={`rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${p.highlight ? "border-[#d4a24c] bg-[#d4a24c]/[0.07]" : "border-ink/10"}`}
-                                        >
-                                            <div className="text-[14px] font-bold text-ink">{p.name}</div>
-                                            <div className="text-[12px] text-ink/50">{p.range}</div>
-                                            <div className="mt-2 text-[12px] text-ink/40 line-through">{formatBRL(p.price)}/mês</div>
-                                            <div className="text-[20px] font-extrabold leading-tight text-ink">{formatBRL(p.launchPrice)}</div>
-                                            <div className="text-[11px] text-ink/50">no 1º mês · depois {formatBRL(p.price)}/mês</div>
-                                        </a>
-                                    ))}
-                                </div>
-                                <p className="mt-2.5 text-[12px] text-ink/50">{BARBER_SYSTEM.cycles} — o desconto vale também sobre o mês promocional.</p>
-                            </div>
-                            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                                <a href={BARBER_SYSTEM.url} className="group inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-b from-[#e0b866] to-[#c08a2e] px-7 text-[15px] font-semibold text-[#0b0b0c] shadow-[0_10px_30px_-12px_rgba(212,162,76,.9)] transition hover:brightness-110">
-                                    Conhecer o sistema <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
-                                </a>
-                                <GhostLink href={BARBER_SYSTEM.demoBookingUrl} className="whitespace-nowrap">Ver agendamento de exemplo</GhostLink>
-                            </div>
-                            <p className="mt-4 text-[13px] text-ink/40">
-                                {BARBER_SYSTEM.trialDays} dias grátis, sem cartão · 1º mês a partir de {formatBRL(BARBER_SYSTEM.plans[0].launchPrice)}
-                            </p>
-                        </div>
-
-                        {/* Prévia do agendamento no celular */}
-                        <div className="relative mx-auto w-full max-w-[300px]">
-                            <div className="rounded-[36px] border border-ink/10 bg-[#0b0b0c] p-3 shadow-[0_40px_80px_-30px_var(--kt-shadow)]">
-                                <div className="rounded-[28px] bg-[#121214] p-4 text-left text-[#e4e4e7]">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d4a24c] text-sm font-black text-[#0b0b0c]">B</div>
-                                        <div>
-                                            <div className="text-[13px] font-bold text-white">Black Barber</div>
-                                            <div className="text-[10px] text-[#71717a]">Agende seu horário</div>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 space-y-2">
-                                        {[["Corte", "R$ 40,00"], ["Barba", "R$ 30,00"], ["Corte + Barba", "R$ 65,00"]].map(([n, p]) => (
-                                            <div key={n} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-[12px]">
-                                                <span className="font-semibold text-white">{n}</span>
-                                                <span className="text-[#a1a1aa]">{p}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="mt-3 grid grid-cols-4 gap-1.5">
-                                        {["09:00", "09:30", "10:00", "10:30", "11:00", "13:00", "13:30", "14:00"].map((h, i) => (
-                                            <span key={h} className={`rounded-lg py-1.5 text-center text-[10px] font-semibold ${i === 2 ? "bg-[#d4a24c] text-[#0b0b0c]" : "border border-white/10 text-white"}`}>{h}</span>
-                                        ))}
-                                    </div>
-                                    <div className="mt-3 rounded-xl bg-[#d4a24c] py-2.5 text-center text-[12px] font-bold text-[#0b0b0c]">Confirmar agendamento</div>
-                                </div>
-                            </div>
-                        </div>
+        <section id="sistemas" className="relative scroll-mt-24 py-12 sm:py-16">
+            <div className="relative mx-auto max-w-6xl px-5 text-center sm:px-6">
+                <Reveal>
+                    <Eyebrow>Nossos sistemas</Eyebrow>
+                    <h2 className="mt-4 text-[28px] font-semibold tracking-[-0.03em] text-ink sm:text-[36px]">Conheça nossos <span className="kt-serif italic text-kt-accent-strong">sistemas</span></h2>
+                    <div className="mt-7 flex flex-wrap justify-center gap-2.5">
+                        {items.map(([Icon, t]) => (
+                            <a key={t} href="#/sistemas" className="inline-flex h-11 items-center gap-2 rounded-full border border-ink/12 bg-ink/[0.03] px-5 text-[14px] font-medium text-ink/85 transition hover:border-ink/25 hover:bg-ink/[0.07]">
+                                <Icon size={15} className={t === "Barbearias" ? "text-[#c08a2e]" : "text-kt-accent"} /> {t}
+                            </a>
+                        ))}
                     </div>
                 </Reveal>
-
-                {/* Demais sistemas */}
-                <div className="mt-5 grid gap-4 md:grid-cols-3">
-                    {OTHER_SYSTEMS.map((s, i) => (
-                        <Reveal key={s.title} delay={i * 70}>
-                            <button
-                                onClick={() => openSystem(s, onQuote)}
-                                className="group flex h-full w-full flex-col rounded-3xl border border-ink/[0.07] bg-gradient-to-b from-ink/[0.045] to-ink/[0.01] p-7 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#7c93ff]/35"
-                            >
-                                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-ink/10 bg-gradient-to-b from-ink/[0.08] to-ink/[0.02] text-kt-accent-strong">
-                                    <s.icon size={21} strokeWidth={1.6} />
-                                </span>
-                                <h3 className="mt-6 text-[18px] font-semibold tracking-tight text-ink">{s.title}</h3>
-                                <p className="mt-2 flex-1 text-[14.5px] leading-relaxed text-ink/50">{s.text}</p>
-                                <span className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-kt-accent opacity-70 transition group-hover:opacity-100">
-                                    {s.cta} <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                                </span>
-                            </button>
-                        </Reveal>
-                    ))}
-                </div>
             </div>
         </section>
+    );
+}
+
+export function SystemsPage() {
+    const { openQuote, quoteModal } = useQuote();
+    const { isLight, toggle, rootClass } = useSiteTheme();
+    useEffect(() => window.scrollTo({ top: 0 }), []); // abre no topo, mesmo vindo do meio da página inicial
+    return (
+        <div className={`min-h-screen overflow-x-clip ${rootClass} font-sans text-ink antialiased`}>
+            <Header onQuote={() => openQuote()} isLight={isLight} onToggleTheme={toggle} />
+            <section className="relative overflow-hidden pb-20 pt-32 sm:pt-40">
+                <Glow className="left-[-120px] top-40 h-[420px] w-[520px] bg-[#d4a24c]/15" />
+                <div className="relative mx-auto max-w-6xl px-5 sm:px-6">
+                    <a href="#/" className="inline-flex items-center gap-1.5 text-sm text-ink/50 hover:text-ink"><ChevronLeft size={16} /> Voltar ao início</a>
+                    <div className="mt-8">
+                        <SectionTitle eyebrow="Nossos sistemas" title={<>Conheça nossos <span className="kt-serif italic text-kt-accent-strong">sistemas</span></>} text="Sistemas prontos, com a sua marca, para começar a usar hoje — escolha o do seu segmento." />
+                    </div>
+                    <Reveal className="mt-14 overflow-hidden rounded-[32px] border border-ink/10 bg-kt-raised/60 backdrop-blur">
+                        <div className="grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_1fr] lg:p-14">
+                            <div>
+                                <span className="inline-flex items-center gap-2 rounded-full border border-[#d4a24c]/40 bg-[#d4a24c]/10 px-3 py-1 text-[12px] font-semibold text-[#b8862f]">
+                                    <Scissors size={13} /> Destaque · Disponível agora
+                                </span>
+                                <h3 className="mt-5 text-[30px] font-semibold leading-[1.08] tracking-[-0.03em] text-ink sm:text-[40px]">
+                                    Sistema completo para <span className="kt-serif italic text-[#c08a2e]">barbearias</span>
+                                </h3>
+                                <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink/55">
+                                    Agenda online, clientes, profissionais, caixa e financeiro num só lugar — pronto para usar, com a marca da sua barbearia.
+                                </p>
+                                <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                                    {BARBER_SYSTEM.highlights.map((h) => (
+                                        <li key={h} className="flex items-start gap-2 text-[14px] text-ink/70">
+                                            <Check size={16} className="mt-0.5 shrink-0 text-kt-check" /> {h}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="mt-7">
+                                    <div className="inline-flex items-center gap-1.5 rounded-full bg-[#d4a24c]/15 px-3 py-1 text-[12px] font-bold uppercase tracking-wide text-[#a87a2a]">
+                                        🎉 Promoção de inauguração · 1º mês
+                                    </div>
+                                    <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
+                                        {BARBER_SYSTEM.plans.map((p) => (
+                                            <a
+                                                key={p.name}
+                                                href={`${BARBER_SYSTEM.url}/#planos`}
+                                                className={`rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${p.highlight ? "border-[#d4a24c] bg-[#d4a24c]/[0.07]" : "border-ink/10"}`}
+                                            >
+                                                <div className="text-[14px] font-bold text-ink">{p.name}</div>
+                                                <div className="text-[12px] text-ink/50">{p.range}</div>
+                                                <div className="mt-2 text-[12px] text-ink/40 line-through">{formatBRL(p.price)}/mês</div>
+                                                <div className="text-[20px] font-extrabold leading-tight text-ink">{formatBRL(p.launchPrice)}</div>
+                                                <div className="text-[11px] text-ink/50">no 1º mês · depois {formatBRL(p.price)}/mês</div>
+                                            </a>
+                                        ))}
+                                    </div>
+                                    <p className="mt-2.5 text-[12px] text-ink/50">{BARBER_SYSTEM.cycles} — o desconto vale também sobre o mês promocional.</p>
+                                </div>
+                                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                                    <a href={BARBER_SYSTEM.url} className="group inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-b from-[#e0b866] to-[#c08a2e] px-7 text-[15px] font-semibold text-[#0b0b0c] shadow-[0_10px_30px_-12px_rgba(212,162,76,.9)] transition hover:brightness-110">
+                                        Conhecer o sistema <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+                                    </a>
+                                    <GhostLink href={BARBER_SYSTEM.demoBookingUrl} className="whitespace-nowrap">Ver agendamento de exemplo</GhostLink>
+                                </div>
+                                <p className="mt-4 text-[13px] text-ink/40">
+                                    {BARBER_SYSTEM.trialDays} dias grátis, sem cartão · 1º mês a partir de {formatBRL(BARBER_SYSTEM.plans[0].launchPrice)}
+                                </p>
+                            </div>
+
+                            {/* Prévia do agendamento no celular */}
+                            <div className="relative mx-auto w-full max-w-[300px]">
+                                <div className="rounded-[36px] border border-ink/10 bg-[#0b0b0c] p-3 shadow-[0_40px_80px_-30px_var(--kt-shadow)]">
+                                    <div className="rounded-[28px] bg-[#121214] p-4 text-left text-[#e4e4e7]">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d4a24c] text-sm font-black text-[#0b0b0c]">B</div>
+                                            <div>
+                                                <div className="text-[13px] font-bold text-white">Black Barber</div>
+                                                <div className="text-[10px] text-[#71717a]">Agende seu horário</div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 space-y-2">
+                                            {[["Corte", "R$ 40,00"], ["Barba", "R$ 30,00"], ["Corte + Barba", "R$ 65,00"]].map(([n, p]) => (
+                                                <div key={n} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-[12px]">
+                                                    <span className="font-semibold text-white">{n}</span>
+                                                    <span className="text-[#a1a1aa]">{p}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-3 grid grid-cols-4 gap-1.5">
+                                            {["09:00", "09:30", "10:00", "10:30", "11:00", "13:00", "13:30", "14:00"].map((h, i) => (
+                                                <span key={h} className={`rounded-lg py-1.5 text-center text-[10px] font-semibold ${i === 2 ? "bg-[#d4a24c] text-[#0b0b0c]" : "border border-white/10 text-white"}`}>{h}</span>
+                                            ))}
+                                        </div>
+                                        <div className="mt-3 rounded-xl bg-[#d4a24c] py-2.5 text-center text-[12px] font-bold text-[#0b0b0c]">Confirmar agendamento</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Reveal>
+
+                    {/* Demais sistemas */}
+                    <div className="mt-5 grid gap-4 md:grid-cols-3">
+                        {OTHER_SYSTEMS.map((s, i) => (
+                            <Reveal key={s.title} delay={i * 70}>
+                                <button
+                                    onClick={() => openSystem(s, openQuote)}
+                                    className="group flex h-full w-full flex-col rounded-3xl border border-ink/[0.07] bg-gradient-to-b from-ink/[0.045] to-ink/[0.01] p-7 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#7c93ff]/35"
+                                >
+                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-ink/10 bg-gradient-to-b from-ink/[0.08] to-ink/[0.02] text-kt-accent-strong">
+                                        <s.icon size={21} strokeWidth={1.6} />
+                                    </span>
+                                    <h3 className="mt-6 text-[18px] font-semibold tracking-tight text-ink">{s.title}</h3>
+                                    <p className="mt-2 flex-1 text-[14.5px] leading-relaxed text-ink/50">{s.text}</p>
+                                    <span className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-kt-accent opacity-70 transition group-hover:opacity-100">
+                                        {s.cta} <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                                    </span>
+                                </button>
+                            </Reveal>
+                        ))}
+                    </div>
+                </div>
+            </section>
+            <Footer onQuote={() => openQuote()} isLight={isLight} />
+            {quoteModal}
+        </div>
     );
 }
 
@@ -618,8 +651,8 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ---------------- Nossos sistemas (barbearia em destaque) ---------------- */}
-            <SystemsSection onQuote={openQuote} />
+            {/* ---------------- Nossos sistemas (só botões; detalhes em #/sistemas) ---------------- */}
+            <SystemsTeaser />
 
             {/* ---------------- Projetos ---------------- */}
             <section id="projetos" className="relative scroll-mt-24 py-16 sm:py-24">

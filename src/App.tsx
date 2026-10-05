@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Loader2, LogOut } from "lucide-react";
 import { useSession } from "./contexts/SessionContext";
 import { useRoute, navigate } from "./lib/router";
-import LandingPage, { KtLogo, ProjectsPage } from "./screens/public/LandingPage";
+import LandingPage, { KtLogo, ProjectsPage, SystemsPage } from "./screens/public/LandingPage";
 import { LoginPage, SignupPage, ForgotPasswordPage } from "./screens/public/AuthPages";
 import { PendingPaymentScreen, BlockedScreen, NoStoreScreen } from "./screens/account/AccountStatusScreens";
 import AppShell from "./screens/app/AppShell";
@@ -54,6 +54,7 @@ export default function App() {
         if (route.path === "/cadastro") return <SignupPage initialPlan={route.params.get("plano")} />;
         if (route.path === "/recuperar") return <ForgotPasswordPage />;
         if (route.path === "/projetos") return <ProjectsPage />;
+        if (route.path === "/sistemas") return <SystemsPage />;
         return <LandingPage />;
     }
 
