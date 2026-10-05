@@ -413,7 +413,7 @@ function SystemsTeaser() {
 export function SystemsPage() {
     const { openQuote, quoteModal } = useQuote();
     const { isLight, toggle, rootClass } = useSiteTheme();
-    useEffect(() => window.scrollTo({ top: 0 }), []); // abre no topo, mesmo vindo do meio da página inicial
+    useEffect(() => { window.scrollTo({ top: 0 }); }, []); // abre no topo, mesmo vindo do meio da página inicial
     return (
         <div className={`min-h-screen overflow-x-clip ${rootClass} font-sans text-ink antialiased`}>
             <Header onQuote={() => openQuote()} isLight={isLight} onToggleTheme={toggle} />
